@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mr. Advisor | No-Credit Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  </head>
+  <body>
+    <div class="background-orb orb-one"></div>
+    <div class="background-orb orb-two"></div>
+
+    <main class="page-shell">
+      <section class="hero card">
+        <div class="hero-copy">
+          <p class="eyebrow">Fairfield University • Dolan School of Business</p>
+          <h1>Mr. Advisor</h1>
+          <p class="hero-lead">
+            An academic planner that runs locally in your browser. It can read typed course lists,
+            APR uploads, or unofficial transcript uploads, then build a structured Dolan advising
+            degree audit for your advising meeting.
+          </p>
+
+          <div class="intake-options" aria-label="Student input options">
+            <div class="intake-option">
+              <strong>Option 1</strong>
+              <span>Upload an APR from Workday</span>
+            </div>
+            <div class="intake-option">
+              <strong>Option 2</strong>
+              <span>Upload an unofficial transcript from Workday</span>
+            </div>
+            <div class="intake-option">
+              <strong>Option 3</strong>
+              <span>Type/Paste completed and in-progress classes directly</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <img
+            src="assets/mr-advisor.png"
+            alt="Mr. Advisor robot in the Dolan School of Business"
+          />
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <aside class="sidebar">
+          <section class="card panel warning-panel">
+            <div class="warning-banner">
+              WARNING: Information entered here is not private, just like anything submitted online.
+            </div>
+            <p class="warning-copy">
+              If you are uncomfortable uploading an APR or unofficial transcript, type in all
+              completed and in-progress classes instead and use a fake name.
+            </p>
+          </section>
+
+          <section class="card panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">1. Student Profile</p>
+                <h2>Program Details</h2>
+              </div>
+              <span class="status-chip" id="termStatus">Waiting</span>
+            </div>
+
+            <label class="field">
+              <span>Catalog track</span>
+              <select id="catalogTrackInput">
+                <option value="2025-2027">Class of 2025 to 2027</option>
+                <option value="2028+">Class of 2028 and beyond</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Student name</span>
+              <input id="studentNameInput" type="text" placeholder="Optional — a fake name is fine" />
+            </label>
+
+            <label class="field">
+              <span>Primary major (required)</span>
+              <input id="primaryMajorInput" type="text" placeholder="Example: Finance" />
+            </label>
+
+            <label class="field">
+              <span>Primary concentration</span>
+              <input id="primaryConcentrationInput" type="text" placeholder="Optional" />
+            </label>
+
+            <label class="field">
+              <span>Second major / minor / certificate (required if pursuing one)</span>
+              <textarea
+                id="additionalProgramsInput"
+                rows="4"
+                placeholder="List any second major, minor, or certificate with concentrations if applicable"
+              ></textarea>
+            </label>
+
+            <p class="helper-copy required-callout">
+              Students have to enter the primary major here and must also list every second major,
+              minor, or certificate they are pursuing so Mr. Advisor can check the correct
+              requirements.
+            </p>
+          </section>
+
+          <section class="card panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">2. Course History</p>
+                <h2>Uploads or Typed Classes</h2>
+              </div>
+              <span class="status-chip muted" id="parseStatus">Not analyzed</span>
+            </div>
+
+            <label class="field upload-field">
+              <span>Upload APR or unofficial transcript</span>
+              <input id="studentFilesInput" type="file" multiple accept=".pdf,.doc,.docx,.txt" />
+            </label>
+
+            <p class="helper-copy">
+              Upload APRs, unofficial transcripts, or text files. PDF and DOCX parsing runs in
+              your browser and does not use credits.
+            </p>
+
+            <p class="helper-copy warning-inline">
+              If you prefer not to upload anything, type all classes taken and in progress below
+              and use a fake name above.
+            </p>
+
+            <ul class="upload-list" id="studentUploadList">
+              <li>No files selected yet.</li>
+            </ul>
+
+            <label class="field">
+              <span>Type or copy/paste completed and in-progress classes from the Academic Progress in Major spreadsheet in Workday instead of uploading</span>
+              <textarea
+                id="coursesInput"
+                rows="9"
+                placeholder="Example:
+Completed:
+ACCT 1011
+ECON 1011
+MATH 2217
+
+In Progress:
+FNCE 2101
+MKTG 1101"
+              ></textarea>
+            </label>
+
+            <p class="helper-copy">
+              Use an <strong>In Progress:</strong> heading or prefix individual lines with
+              <strong>IP:</strong> so the planner can separate current courses from completed ones.
+            </p>
+          </section>
+
+          <section class="card panel">
+            <div class="panel-header">
+              <div>
+                <p class="section-kicker">3. Sources</p>
+                <h2>Fairfield References</h2>
+              </div>
+            </div>
+
+            <ul class="source-list" id="bundledSourceList"></ul>
+            <div class="link-groups" id="catalogLinkGroups"></div>
+          </section>
+        </aside>
+
+        <section class="chat-column">
+          <section class="card chat-card">
+            <div class="chat-header">
+              <div>
+                <p class="section-kicker">4. Local Plan Builder</p>
+                <h2>Generated Worksheet</h2>
+              </div>
+              <div class="chat-actions">
+                <button id="analyzeButton" type="button">Generate Plan</button>
+                <button id="downloadPlanButton" type="button" class="secondary-button">
+                  Download Plan
+                </button>
+              </div>
+            </div>
+
+            <div class="summary-bar" id="summaryBar">
+              The planner will use the current local date, uploaded text, typed classes, and the
+              bundled Dolan documents.
+            </div>
+
+            <section class="result-grid">
+              <article class="result-panel">
+                <h3>Upcoming Semester</h3>
+                <div id="upcomingSemesterOutput" class="result-copy">
+                  Generate a plan to see the recommended next term.
+                </div>
+              </article>
+
+              <article class="result-panel">
+                <h3>Parsed Courses</h3>
+                <div id="parsedCoursesOutput" class="result-copy">
+                  Parsed completed and in-progress courses will appear here.
+                </div>
+              </article>
+            </section>
+
+            <section class="result-panel full-width">
+              <h3>Requirement Analysis</h3>
+              <div id="analysisOutput" class="result-copy">
+                The local planner will compare uploaded or typed courses against Dolan core and
+                business-core rules, then show remaining items and credit math here.
+              </div>
+            </section>
+
+            <section class="result-panel full-width">
+              <h3>Full Remaining-Semester Plan</h3>
+              <div id="fullPlanOutput" class="result-copy">
+                Generate a plan to see a semester-by-semester path through degree completion.
+              </div>
+            </section>
+
+            <section class="result-panel full-width">
+              <h3>Later-Semester Sequencing</h3>
+              <div id="sequencingOutput" class="result-copy">
+                Sequencing notes, bottlenecks, and the downloadable plan text will appear here.
+              </div>
+            </section>
+
+            <section class="result-panel full-width">
+              <div class="followup-header">
+                <div>
+                  <h3>Follow-Up Questions</h3>
+                  <p class="helper-copy">
+                    Ask what changes if you add or drop a major or minor. Enter the change in the box below and Mr. Advisor will keep the original plan above and show a revised plan underneath.
+                  </p>
+                </div>
+              </div>
+
+              <div id="chatHistory" class="followup-history">
+                <article class="followup-message assistant">
+                  Generate a plan first, then ask a follow-up question here.
+                </article>
+              </div>
+
+              <div class="followup-composer">
+                <textarea
+                  id="followupInput"
+                  rows="3"
+                  placeholder="Example: Add marketing minor. Drop finance minor. What changes if I add management major?"
+                ></textarea>
+                <button id="askFollowupButton" type="button">Ask Mr. Advisor</button>
+              </div>
+            </section>
+
+            <section class="result-panel full-width">
+              <h3>Revised Plan for Add/Drop Scenario</h3>
+              <div id="scenarioOutput" class="result-copy">
+                Generate the original plan first. Then use Ask Mr. Advisor to test adding or dropping a major or minor and the revised plan will appear here.
+              </div>
+            </section>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
