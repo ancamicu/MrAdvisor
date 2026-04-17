@@ -4,7 +4,7 @@ Mr. Advisor is a no-credit academic planning tool for Fairfield University's Dol
 
 ## What It Does
 
-- Lets users upload an APR or unofficial transcript
+- Lets users upload an APR or unofficial transcript 
 - Lets users type completed and in-progress classes instead of uploading
 - Parses PDF, DOCX, and TXT files client-side
 - Checks Magis Core, business core, and detected major/minor requirement codes from bundled Dolan documents
