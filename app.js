@@ -1,50 +1,43 @@
-const pathParts = window.location.pathname.split("/").filter(Boolean);
-
-const isGithubPages =
-  window.location.hostname.endsWith("github.io") &&
-  pathParts.length > 0;
-
-const BASE_PATH = isGithubPages ? `/${pathParts[0]}/` : "/";
-
-const assetPath = (relativePath) => `${BASE_PATH}${relativePath}`;const BASE = new URL("./", window.location.href);
+const BASE_URL = window.location.origin + window.location.pathname.replace(/\/$/, "");
 
 const BUNDLED_DOCS = [
   {
     key: "2025-2027",
     label: "Class of 2025 to 2027 Dolan majors and core reference",
-    path: assetPath("assets/docs/class-2025-2027-dolan-majors-core.pdf"),
+    path: `${BASE_URL}/assets/docs/class-2025-2027-dolan-majors-core.pdf`,
     filename: "class-2025-2027-dolan-majors-core.pdf",
     type: "pdf",
   },
   {
     key: "2028+",
     label: "Class of 2028 and beyond Dolan majors and core reference",
-    path: assetPath("assets/docs/class-2028-beyond-dolan-majors-core.pdf"),
+    path: `${BASE_URL}/assets/docs/class-2028-beyond-dolan-majors-core.pdf`,
     filename: "class-2028-beyond-dolan-majors-core.pdf",
     type: "pdf",
   },
   {
     key: "study-abroad",
     label: "Dolan study abroad advising sheet",
-    path: assetPath("assets/docs/dolan-study-abroad-advising-sheet.pdf"),
+    path: `${BASE_URL}/assets/docs/dolan-study-abroad-advising-sheet.pdf`,
     filename: "dolan-study-abroad-advising-sheet.pdf",
     type: "pdf",
   },
   {
     key: "magis",
     label: "Magis course reference",
-    path: assetPath("assets/docs/magis-courses.pdf"),
+    path: `${BASE_URL}/assets/docs/magis-courses.pdf`,
     filename: "magis-courses.pdf",
     type: "pdf",
   },
   {
     key: "internships",
     label: "Internship guidance memo",
-    path: assetPath("assets/docs/details-on-internships.docx"),
+    path: `${BASE_URL}/assets/docs/details-on-internships.docx`,
     filename: "details-on-internships.docx",
     type: "docx",
   },
 ];
+
 const CATALOG_LINK_GROUPS = [
   {
     title: "Core and Policies",
