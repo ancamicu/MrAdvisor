@@ -767,17 +767,25 @@ async function loadBundledTexts() {
 
   for (const doc of BUNDLED_DOCS) {
     if (doc.type === "pdf") {
-      const response = await fetch(doc.path);
-      if (!response.ok) {
-        throw new Error(`Could not load bundled PDF ${doc.filename}.`);
-      }
+  const response = await fetch(doc.path, { cache: "no-store" });
+
+console.log("FETCHING:", doc.path);
+console.log("STATUS:", response.status);
+
+if (!response.ok) {
+  throw new Error(`Could not load bundled file ${doc.filename} from ${doc.path} (status ${response.status}).`);
+}
       const blob = await response.blob();
       state.bundledText[doc.key] = await extractPdfText(new File([blob], doc.filename, { type: "application/pdf" }));
     } else {
-      const response = await fetch(doc.path);
-      if (!response.ok) {
-        throw new Error(`Could not load bundled DOCX ${doc.filename}.`);
-      }
+     const response = await fetch(doc.path, { cache: "no-store" });
+
+console.log("FETCHING:", doc.path);
+console.log("STATUS:", response.status);
+
+if (!response.ok) {
+  throw new Error(`Could not load bundled file ${doc.filename} from ${doc.path} (status ${response.status}).`);
+}
       const blob = await response.blob();
       state.bundledText[doc.key] = await extractDocxText(new File([blob], doc.filename));
     }
