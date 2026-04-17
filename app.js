@@ -1,4 +1,12 @@
-const BASE = new URL("./", window.location.href);
+const pathParts = window.location.pathname.split("/").filter(Boolean);
+
+const isGithubPages =
+  window.location.hostname.endsWith("github.io") &&
+  pathParts.length > 0;
+
+const BASE_PATH = isGithubPages ? `/${pathParts[0]}/` : "/";
+
+const assetPath = (relativePath) => `${BASE_PATH}${relativePath}`;const BASE = new URL("./", window.location.href);
 
 const BUNDLED_DOCS = [
   {
