@@ -1,36 +1,38 @@
-﻿const BUNDLED_DOCS = [
+const BASE = new URL("./", window.location.href);
+
+const BUNDLED_DOCS = [
   {
     key: "2025-2027",
     label: "Class of 2025 to 2027 Dolan majors and core reference",
-    path: "assets/docs/class-2025-2027-dolan-majors-core.pdf",
+    path: new URL("./assets/docs/class-2025-2027-dolan-majors-core.pdf", BASE).href,
     filename: "class-2025-2027-dolan-majors-core.pdf",
     type: "pdf",
   },
   {
     key: "2028+",
     label: "Class of 2028 and beyond Dolan majors and core reference",
-    path: "assets/docs/class-2028-beyond-dolan-majors-core.pdf",
+    path: new URL("./assets/docs/class-2028-beyond-dolan-majors-core.pdf", BASE).href,
     filename: "class-2028-beyond-dolan-majors-core.pdf",
     type: "pdf",
   },
   {
     key: "study-abroad",
     label: "Dolan study abroad advising sheet",
-    path: "assets/docs/dolan-study-abroad-advising-sheet.pdf",
+    path: new URL("./assets/docs/dolan-study-abroad-advising-sheet.pdf", BASE).href,
     filename: "dolan-study-abroad-advising-sheet.pdf",
     type: "pdf",
   },
   {
     key: "magis",
     label: "Magis course reference",
-    path: "assets/docs/magis-courses.pdf",
+    path: new URL("./assets/docs/magis-courses.pdf", BASE).href,
     filename: "magis-courses.pdf",
     type: "pdf",
   },
   {
     key: "internships",
     label: "Internship guidance memo",
-    path: "assets/docs/details-on-internships.docx",
+    path: new URL("./assets/docs/details-on-internships.docx", BASE).href,
     filename: "details-on-internships.docx",
     type: "docx",
   },
