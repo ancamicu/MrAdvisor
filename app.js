@@ -532,6 +532,26 @@ function getPrimaryMajorBusinessCorePriorities() {
   return PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES[primaryMajor] || [];
 }
 
+function isAccountingMajor() {
+  const primaryMajor = normalizeProgramLabel(primaryMajorInput.value.trim());
+  return primaryMajor === "accounting" || primaryMajor === "accounting major";
+}
+
+function accountingPriorityRank(code) {
+  if (!isAccountingMajor()) return 999;
+
+  const order = [
+    "ACCT 1011",
+    "ACCT 1012",
+    "FNCE 2101",
+    "ACCT 2203",
+    "ACCT 2204"
+  ];
+
+  const index = order.indexOf(code);
+  return index === -1 ? 999 : index;
+}
+
 function prioritizePrimaryMajorBusinessCore(remainingBusinessCore) {
   const priorityCodes = getPrimaryMajorBusinessCorePriorities();
 
@@ -605,6 +625,11 @@ function sortByPrerequisiteStructure(items) {
   return [...items].sort((a, b) => {
     const aCode = courseCodeFromPlanItem(a);
     const bCode = courseCodeFromPlanItem(b);
+
+    const aAcctRank = accountingPriorityRank(aCode);
+    const bAcctRank = accountingPriorityRank(bCode);
+
+    if (aAcctRank !== bAcctRank) return aAcctRank - bAcctRank;
 
     const aPriority = priorityCodes.indexOf(aCode);
     const bPriority = priorityCodes.indexOf(bCode);
@@ -1639,9 +1664,8 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
 
   sortByPrerequisiteStructure(remainingBusinessCore).forEach((item) => {
     const codeCheck = courseCodeFromPlanItem(item);
-if (codeCheck === "DATA 1101L") {
-  return;
-}
+    if (codeCheck === "DATA 1101L") return;
+
     const cleaned = item.replace(/^•\s*/, "");
     const code = courseCodeFromPlanItem(cleaned);
     const match = cleaned.match(/\(([0-9]+) cr\)/i);
@@ -1662,10 +1686,11 @@ if (codeCheck === "DATA 1101L") {
     });
   });
 
-    planItems.sort((a, b) => {
+  planItems.sort((a, b) => {
     const sorted = sortByPrerequisiteStructure([a, b]);
     return sorted[0] === a ? -1 : 1;
   });
+
   let neededCredits = remainingTo120;
   let termLabel = term.next;
   let runningCredits = totalCredits;
@@ -1677,6 +1702,7 @@ if (codeCheck === "DATA 1101L") {
     const targetCredits = isFinalTerm ? neededCredits : 15;
     let termCredits = 0;
     const picks = [];
+    const pickedCodesThisTerm = new Set();
 
     let madeProgress = true;
 
@@ -1690,8 +1716,13 @@ if (codeCheck === "DATA 1101L") {
           continue;
         }
 
+        if (nextItem.code === "ACCT 2204" && pickedCodesThisTerm.has("ACCT 2203")) {
+          continue;
+        }
+
         planItems.splice(i, 1);
         picks.push(nextItem.label);
+        pickedCodesThisTerm.add(nextItem.code);
         termCredits += nextItem.credits;
         madeProgress = true;
 
@@ -1700,7 +1731,7 @@ if (codeCheck === "DATA 1101L") {
           if (labIndex !== -1) {
             const lab = planItems.splice(labIndex, 1)[0];
             picks.push(`${lab.label} — take with DATA 1101`);
-            completedOrPlannedSet.add("DATA 1101L");
+            pickedCodesThisTerm.add("DATA 1101L");
           }
         }
 
@@ -1708,12 +1739,10 @@ if (codeCheck === "DATA 1101L") {
       }
     }
 
-    picks.forEach((item) => {
-  const pickedCode = courseCodeFromPlanItem(item);
-  if (pickedCode) {
-    completedOrPlannedSet.add(pickedCode);
-  }
-});
+    pickedCodesThisTerm.forEach((code) => {
+      completedOrPlannedSet.add(code);
+    });
+
     while (termCredits < targetCredits) {
       const remainingGap = targetCredits - termCredits;
       const fillerCredits = remainingGap >= 3 ? 3 : remainingGap;
