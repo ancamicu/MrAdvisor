@@ -523,8 +523,8 @@ const PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES = {
   "international business": ["INTL 2101"],
   "business analytics major": ["DATA 1101"],
   "business analytics": ["DATA 1101"],
-  "accounting major": ["ACCT 1011", "ACCT 1012"],
-  "accounting": ["ACCT 1011", "ACCT 1012"]
+"accounting major": ["ACCT 1011", "ACCT 1012", "FNCE 2101", "ACCT 2203", "ACCT 2204"],
+"accounting": ["ACCT 1011", "ACCT 1012", "FNCE 2101", "ACCT 2203", "ACCT 2204"]
 };
 
 function getPrimaryMajorBusinessCorePriorities() {
@@ -1562,40 +1562,37 @@ function buildUpcomingSemester(remainingBusinessCore, missingProgramCodes, nextT
 
   const completedAtStartOfTermSet = new Set(allCourses);
 
-  const businessCoreItems = prioritizePrimaryMajorBusinessCore(
-    sortByPrerequisiteStructure(remainingBusinessCore)
-  );
+  const combinedItems = [
+    ...remainingBusinessCore
+      .filter((item) => courseCodeFromPlanItem(item) !== "DATA 1101L")
+      .map((item) => {
+        const cleaned = item.replace(/^•\s*/, "");
+        const code = courseCodeFromPlanItem(cleaned);
+        return { code, label: cleaned, credits: inferCredits(code) };
+      }),
+    ...missingProgramCodes.map((code) => {
+      const title = findKnownCourseTitle(code);
+      return {
+        code,
+        label: title ? `${code} ${title}` : `${code} (program-specific requirement)`,
+        credits: inferCredits(code),
+      };
+    }),
+  ];
 
-  businessCoreItems.forEach((item) => {
+  sortByPrerequisiteStructure(combinedItems).forEach((item) => {
     if (pickedCredits >= targetCredits) return;
+    if (!canTakeCourse(item.code, completedAtStartOfTermSet, totalCredits)) return;
 
-    const code = courseCodeFromPlanItem(item);
-    if (code === "DATA 1101L") return;
-
-    if (!canTakeCourse(code, completedAtStartOfTermSet, totalCredits)) return;
-
-    const match = item.match(/\(([0-9]+) cr\)/i);
-    const credits = match ? Number.parseInt(match[1], 10) : inferCredits(code);
-
-    picks.push(item.replace(/^•\s*/, ""));
-    pickedCredits += credits;
+    picks.push(item.label);
+    pickedCredits += item.credits;
 
     if (
-      code === "DATA 1101" &&
+      item.code === "DATA 1101" &&
       remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")
     ) {
       picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
     }
-  });
-
-  sortByPrerequisiteStructure(missingProgramCodes).forEach((code) => {
-    if (pickedCredits >= targetCredits) return;
-
-    if (!canTakeCourse(code, completedAtStartOfTermSet, totalCredits)) return;
-
-    const title = findKnownCourseTitle(code);
-    picks.push(title ? `${code} ${title}` : `${code} (program-specific requirement)`);
-    pickedCredits += inferCredits(code);
   });
 
   return [
@@ -1665,6 +1662,10 @@ if (codeCheck === "DATA 1101L") {
     });
   });
 
+    planItems.sort((a, b) => {
+    const sorted = sortByPrerequisiteStructure([a, b]);
+    return sorted[0] === a ? -1 : 1;
+  });
   let neededCredits = remainingTo120;
   let termLabel = term.next;
   let runningCredits = totalCredits;
