@@ -1541,7 +1541,9 @@ function buildUpcomingSemester(remainingBusinessCore, missingProgramCodes, nextT
   let pickedCredits = 0;
 
   const completedOrPlannedSet = new Set(allCourses);
-  const businessCoreItems = sortByPrerequisiteStructure(remainingBusinessCore);
+ const businessCoreItems = prioritizePrimaryMajorBusinessCore(
+  sortByPrerequisiteStructure(remainingBusinessCore)
+);
 
   businessCoreItems.forEach((item) => {
     if (pickedCredits >= targetCredits) return;
@@ -1552,14 +1554,18 @@ function buildUpcomingSemester(remainingBusinessCore, missingProgramCodes, nextT
     const match = item.match(/\(([0-9]+) cr\)/i);
     const credits = match ? Number.parseInt(match[1], 10) : inferCredits(code);
 
-    picks.push(item.replace(/^•\s*/, ""));
-    pickedCredits += credits;
-    completedOrPlannedSet.add(code);
+  if (code === "DATA 1101L" && completedOrPlannedSet.has("DATA 1101L")) {
+  return;
+}
 
-    if (code === "DATA 1101" && remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")) {
-      picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
-      completedOrPlannedSet.add("DATA 1101L");
-    }
+picks.push(item.replace(/^•\s*/, ""));
+pickedCredits += credits;
+completedOrPlannedSet.add(code);
+
+if (code === "DATA 1101" && remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")) {
+  picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
+  completedOrPlannedSet.add("DATA 1101L");
+}
   });
 
   sortByPrerequisiteStructure(missingProgramCodes).forEach((code) => {
