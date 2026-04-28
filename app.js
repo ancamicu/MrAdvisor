@@ -512,6 +512,44 @@ const BUSINESS_CORE = [
   { code: "MKTG 1101", title: "Principles of Marketing", credits: 3 },
 ];
 
+const PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES = {
+  "marketing major": ["MKTG 1101"],
+  "marketing": ["MKTG 1101"],
+  "finance major": ["FNCE 2101"],
+  "finance": ["FNCE 2101"],
+  "management major": ["MGMT 2101"],
+  "management": ["MGMT 2101"],
+  "international business major": ["INTL 2101"],
+  "international business": ["INTL 2101"],
+  "business analytics major": ["DATA 1101"],
+  "business analytics": ["DATA 1101"],
+  "accounting major": ["ACCT 1011", "ACCT 1012"],
+  "accounting": ["ACCT 1011", "ACCT 1012"]
+};
+
+function getPrimaryMajorBusinessCorePriorities() {
+  const primaryMajor = normalizeProgramLabel(primaryMajorInput.value.trim());
+  return PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES[primaryMajor] || [];
+}
+
+function prioritizePrimaryMajorBusinessCore(remainingBusinessCore) {
+  const priorityCodes = getPrimaryMajorBusinessCorePriorities();
+
+  return [...remainingBusinessCore].sort((a, b) => {
+    const aCode = normalizeCourseCode(a);
+    const bCode = normalizeCourseCode(b);
+
+    const aPriority = priorityCodes.indexOf(aCode);
+    const bPriority = priorityCodes.indexOf(bCode);
+
+    if (aPriority !== -1 && bPriority === -1) return -1;
+    if (aPriority === -1 && bPriority !== -1) return 1;
+    if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
+
+    return 0;
+  });
+}
+
 const COURSE_RULES = {
   "ACCT 1012": { prereqs: ["ACCT 1011"], recommendedYear: 1 },
   "FNCE 2101": { prereqs: ["ACCT 1011"], recommendedYear: 2 },
@@ -565,43 +603,7 @@ function sortByPrerequisiteStructure(items) {
   });
 }
 
-const PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES = {
-  "marketing major": ["MKTG 1101"],
-  "marketing": ["MKTG 1101"],
-  "finance major": ["FNCE 2101"],
-  "finance": ["FNCE 2101"],
-  "management major": ["MGMT 2101"],
-  "management": ["MGMT 2101"],
-  "international business major": ["INTL 2101"],
-  "international business": ["INTL 2101"],
-  "business analytics major": ["DATA 1101"],
-  "business analytics": ["DATA 1101"],
-  "accounting major": ["ACCT 1011", "ACCT 1012"],
-  "accounting": ["ACCT 1011", "ACCT 1012"]
-};
 
-function getPrimaryMajorBusinessCorePriorities() {
-  const primaryMajor = normalizeProgramLabel(primaryMajorInput.value.trim());
-  return PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES[primaryMajor] || [];
-}
-
-function prioritizePrimaryMajorBusinessCore(remainingBusinessCore) {
-  const priorityCodes = getPrimaryMajorBusinessCorePriorities();
-
-  return [...remainingBusinessCore].sort((a, b) => {
-    const aCode = normalizeCourseCode(a);
-    const bCode = normalizeCourseCode(b);
-
-    const aPriority = priorityCodes.indexOf(aCode);
-    const bPriority = priorityCodes.indexOf(bCode);
-
-    if (aPriority !== -1 && bPriority === -1) return -1;
-    if (aPriority === -1 && bPriority !== -1) return 1;
-    if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
-
-    return 0;
-  });
-}
 
 const MAGIS_KNOWN = [
   { label: "One calculus course based on placement", codes: ["MATH 1121", "MATH 1122", "MATH 1141", "MATH 1142", "MATH 1171", "MATH 1172"] },
