@@ -580,8 +580,20 @@ const COURSE_RULES = {
   "MGMT 4300": { seniorOnly: true },
 
   // Accounting sequencing
+  // Accounting sequencing
   "ACCT 2203": { prereqs: ["ACCT 1011", "ACCT 1012"] },
-  "ACCT 2204": { prereqs: ["ACCT 1011", "ACCT 1012", "ACCT 2203"] },
+  "ACCT 2204": { prereqs: ["ACCT 2203"] },
+  "ACCT 2265": { prereqs: ["ACCT 2203"] },
+  "ACCT 3255": { prereqs: ["ACCT 2203"] },
+  "ACCT 3265": { prereqs: ["ACCT 2203"] },
+  "ACCT 3275": { anyPrereqs: ["ACCT 3265", "ACCT 3330", "ACCT 3343"] },
+  "ACCT 3320": { prereqs: ["ACCT 1012", "ACCT 2203"] },
+  "ACCT 3330": { prereqs: ["ACCT 2204"] },
+  "ACCT 3343": { prereqs: ["ACCT 2203"] },
+  "ACCT 3344": { prereqs: ["ACCT 3343"], juniorOnly: true },
+  "ACCT 3345": { prereqs: ["ACCT 3343"], juniorOnly: true },
+  "ACCT 3380": { prereqs: ["ACCT 2204"], juniorOnly: true },
+  "ACCT 4310": { prereqs: ["ACCT 2204"], seniorOnly: true },
 
   // Finance sequencing
   "FNCE 3210": { prereqs: ["FNCE 2101"] },
@@ -608,11 +620,19 @@ function isSeniorYearByCredits(totalCredits) {
 function canTakeCourse(code, completedOrPlannedSet, totalCreditsAtStartOfTerm) {
   const rules = COURSE_RULES[code] || {};
 
-  if (rules.seniorOnly && !isSeniorYearByCredits(totalCreditsAtStartOfTerm)) {
+  if (rules.seniorOnly && totalCreditsAtStartOfTerm < 90) {
+    return false;
+  }
+
+  if (rules.juniorOnly && totalCreditsAtStartOfTerm < 60) {
     return false;
   }
 
   if (rules.prereqs?.some((prereq) => !completedOrPlannedSet.has(prereq))) {
+    return false;
+  }
+
+  if (rules.anyPrereqs?.length && !rules.anyPrereqs.some((prereq) => completedOrPlannedSet.has(prereq))) {
     return false;
   }
 
@@ -1716,9 +1736,14 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
           continue;
         }
 
-        if (nextItem.code === "ACCT 2204" && pickedCodesThisTerm.has("ACCT 2203")) {
-          continue;
-        }
+       const rules = COURSE_RULES[nextItem.code] || {};
+const sameTermPrereqConflict =
+  rules.prereqs?.some((prereq) => pickedCodesThisTerm.has(prereq)) ||
+  rules.anyPrereqs?.some((prereq) => pickedCodesThisTerm.has(prereq));
+
+if (sameTermPrereqConflict) {
+  continue;
+}
 
         planItems.splice(i, 1);
         picks.push(nextItem.label);
