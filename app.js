@@ -1560,50 +1560,42 @@ function buildUpcomingSemester(remainingBusinessCore, missingProgramCodes, nextT
   const picks = [];
   let pickedCredits = 0;
 
-  const completedOrPlannedSet = new Set(allCourses);
- const businessCoreItems = prioritizePrimaryMajorBusinessCore(
-  sortByPrerequisiteStructure(remainingBusinessCore)
-);
+  const completedAtStartOfTermSet = new Set(allCourses);
+
+  const businessCoreItems = prioritizePrimaryMajorBusinessCore(
+    sortByPrerequisiteStructure(remainingBusinessCore)
+  );
 
   businessCoreItems.forEach((item) => {
     if (pickedCredits >= targetCredits) return;
 
     const code = courseCodeFromPlanItem(item);
-    if (!canTakeCourse(code, completedOrPlannedSet, totalCredits)) return;
+    if (code === "DATA 1101L") return;
+
+    if (!canTakeCourse(code, completedAtStartOfTermSet, totalCredits)) return;
 
     const match = item.match(/\(([0-9]+) cr\)/i);
     const credits = match ? Number.parseInt(match[1], 10) : inferCredits(code);
 
-  if (code === "DATA 1101L" && completedOrPlannedSet.has("DATA 1101L")) {
-  return;
-}
+    picks.push(item.replace(/^•\s*/, ""));
+    pickedCredits += credits;
 
-if (code === "DATA 1101L") {
-  return;
-}
-
-picks.push(item.replace(/^•\s*/, ""));
-pickedCredits += credits;
-completedOrPlannedSet.add(code);
-
-if (
-  code === "DATA 1101" &&
-  !completedOrPlannedSet.has("DATA 1101L") &&
-  remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")
-) {
-  picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
-  completedOrPlannedSet.add("DATA 1101L");
-}
+    if (
+      code === "DATA 1101" &&
+      remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")
+    ) {
+      picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
+    }
   });
 
   sortByPrerequisiteStructure(missingProgramCodes).forEach((code) => {
     if (pickedCredits >= targetCredits) return;
-    if (!canTakeCourse(code, completedOrPlannedSet, totalCredits)) return;
+
+    if (!canTakeCourse(code, completedAtStartOfTermSet, totalCredits)) return;
 
     const title = findKnownCourseTitle(code);
     picks.push(title ? `${code} ${title}` : `${code} (program-specific requirement)`);
     pickedCredits += inferCredits(code);
-    completedOrPlannedSet.add(code);
   });
 
   return [
@@ -1700,7 +1692,6 @@ if (codeCheck === "DATA 1101L") {
         planItems.splice(i, 1);
         picks.push(nextItem.label);
         termCredits += nextItem.credits;
-        completedOrPlannedSet.add(nextItem.code);
         madeProgress = true;
 
         if (nextItem.code === "DATA 1101") {
@@ -1716,6 +1707,12 @@ if (codeCheck === "DATA 1101L") {
       }
     }
 
+    picks.forEach((item) => {
+  const pickedCode = courseCodeFromPlanItem(item);
+  if (pickedCode) {
+    completedOrPlannedSet.add(pickedCode);
+  }
+});
     while (termCredits < targetCredits) {
       const remainingGap = targetCredits - termCredits;
       const fillerCredits = remainingGap >= 3 ? 3 : remainingGap;
