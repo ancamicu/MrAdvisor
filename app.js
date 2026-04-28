@@ -552,16 +552,27 @@ return [...remainingBusinessCore].sort((a, b) => {
 
 const COURSE_RULES = {
   "ACCT 1012": { prereqs: ["ACCT 1011"], recommendedYear: 1 },
+
   "FNCE 2101": { prereqs: ["ACCT 1011"], recommendedYear: 2 },
+
   "DATA 1101L": { corequisite: ["DATA 1101"], credits: 0 },
+
   "MGMT 4300": { seniorOnly: true },
 
-  // Major sequencing helpers
+  // Accounting sequencing
+  "ACCT 2203": { prereqs: ["ACCT 1011", "ACCT 1012"] },
+  "ACCT 2204": { prereqs: ["ACCT 1011", "ACCT 1012", "ACCT 2203"] },
+
+  // Finance sequencing
   "FNCE 3210": { prereqs: ["FNCE 2101"] },
   "FNCE 3215": { prereqs: ["FNCE 2101"] },
+
+  // Marketing sequencing
   "MKTG 2212": { prereqs: ["MKTG 1101"] },
   "MKTG 2311": { prereqs: ["MKTG 1101"] },
   "MKTG 4312": { prereqs: ["MKTG 1101"] },
+
+  // Management sequencing
   "MGMT 3235": { prereqs: ["MGMT 2101"] },
   "MGMT 3240": { prereqs: ["MGMT 2101"] }
 };
@@ -589,9 +600,18 @@ function canTakeCourse(code, completedOrPlannedSet, totalCreditsAtStartOfTerm) {
 }
 
 function sortByPrerequisiteStructure(items) {
+  const priorityCodes = getPrimaryMajorBusinessCorePriorities();
+
   return [...items].sort((a, b) => {
     const aCode = courseCodeFromPlanItem(a);
     const bCode = courseCodeFromPlanItem(b);
+
+    const aPriority = priorityCodes.indexOf(aCode);
+    const bPriority = priorityCodes.indexOf(bCode);
+
+    if (aPriority !== -1 && bPriority === -1) return -1;
+    if (aPriority === -1 && bPriority !== -1) return 1;
+    if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
 
     if (aCode === "MGMT 4300" && bCode !== "MGMT 4300") return 1;
     if (bCode === "MGMT 4300" && aCode !== "MGMT 4300") return -1;
@@ -1558,11 +1578,19 @@ function buildUpcomingSemester(remainingBusinessCore, missingProgramCodes, nextT
   return;
 }
 
+if (code === "DATA 1101L") {
+  return;
+}
+
 picks.push(item.replace(/^•\s*/, ""));
 pickedCredits += credits;
 completedOrPlannedSet.add(code);
 
-if (code === "DATA 1101" && remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")) {
+if (
+  code === "DATA 1101" &&
+  !completedOrPlannedSet.has("DATA 1101L") &&
+  remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")
+) {
   picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
   completedOrPlannedSet.add("DATA 1101L");
 }
@@ -1621,6 +1649,10 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
   const planItems = [];
 
   sortByPrerequisiteStructure(remainingBusinessCore).forEach((item) => {
+    const codeCheck = courseCodeFromPlanItem(item);
+if (codeCheck === "DATA 1101L") {
+  return;
+}
     const cleaned = item.replace(/^•\s*/, "");
     const code = courseCodeFromPlanItem(cleaned);
     const match = cleaned.match(/\(([0-9]+) cr\)/i);
