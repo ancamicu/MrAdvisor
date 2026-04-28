@@ -535,7 +535,7 @@ function getPrimaryMajorBusinessCorePriorities() {
 function prioritizePrimaryMajorBusinessCore(remainingBusinessCore) {
   const priorityCodes = getPrimaryMajorBusinessCorePriorities();
 
-  return [...remainingBusinessCore].sort((a, b) => {
+return [...remainingBusinessCore].sort((a, b) => {
     const aCode = normalizeCourseCode(a);
     const bCode = normalizeCourseCode(b);
 
@@ -1962,8 +1962,8 @@ async function buildPlannerSnapshot(completed, inProgress, programs = parseProgr
   const remainingTo120 = Math.max(0, 120 - totalCredits);
   const qualifyingCoursesRemaining = Math.max(0, 40 - countQualifyingCourses(allCourses));
   const prioritizedBusinessCoreRemaining = prioritizePrimaryMajorBusinessCore(businessCoreStatus.remaining);
-  const upcoming = buildUpcomingSemester(businessCoreStatus.remaining, missingProgramCodes, term.next, totalCredits, allCourses);
-  const fullPlan = buildFullRemainingPlan(businessCoreStatus.remaining, missingProgramCodes, term, totalCredits, remainingTo120, allCourses);
+const upcoming = buildUpcomingSemester(prioritizedBusinessCoreRemaining, missingProgramCodes, term.next, totalCredits, allCourses);
+const fullPlan = buildFullRemainingPlan(prioritizedBusinessCoreRemaining, missingProgramCodes, term, totalCredits, remainingTo120, allCourses);
   const loadExplanation =
     totalCredits >= 90 && remainingTo120 < 15
       ? `This planner recommended fewer than 15 credits because the student appears to be in the senior-year range with only ${remainingTo120} credits left to reach 120.`
