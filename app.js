@@ -566,6 +566,76 @@ const COURSE_RULES = {
   "MGMT 3240": { prereqs: ["MGMT 2101"] }
 };
 
+
+Object.assign(COURSE_RULES, {
+  "ACCT 2203": { prereqs: ["ACCT 1011", "ACCT 1012"] },
+  "ACCT 2204": { prereqs: ["ACCT 2203"] },
+  "ACCT 2265": { prereqs: ["ACCT 1011"] },
+  "ACCT 3255": { prereqs: ["ACCT 2203"] },
+  "ACCT 3265": { prereqs: ["ACCT 2265"] },
+  "ACCT 3275": { prereqs: ["ACCT 2203"] },
+  "ACCT 3320": { prereqs: ["ACCT 2203"] },
+  "ACCT 3330": { prereqs: ["ACCT 2204"] },
+  "ACCT 3343": { prereqs: ["ACCT 2203"] },
+  "ACCT 3344": { prereqs: ["ACCT 2203"] },
+  "ACCT 3345": { prereqs: ["ACCT 3343"] },
+  "ACCT 4310": { prereqs: ["ACCT 2204"], seniorOnly: true },
+  "DATA 3210": { prereqs: ["DATA 1101", "MATH 2217"] },
+  "DATA 3260": { prereqs: ["DATA 1101"] },
+  "DATA 3335": { prereqs: ["DATA 1101"] },
+  "DATA 4310": { prereqs: ["DATA 3210", "DATA 3260"] },
+  "DATA 4315": { prereqs: ["DATA 3210"] },
+  "DATA 4999": { prereqs: ["DATA 4310", "DATA 4315"], seniorOnly: true },
+  "ECON 3204": { prereqs: ["ECON 1011", "MATH 2217"] },
+  "ECON 3205": { prereqs: ["ECON 1012", "MATH 2217"] },
+  "FNCE 3210": { prereqs: ["FNCE 2101"] },
+  "FNCE 3215": { prereqs: ["FNCE 2101"] },
+  "FNCE 4305": { prereqs: ["FNCE 3210"] },
+  "FNCE 4320": { prereqs: ["FNCE 3215"] },
+  "FNCE 4330": { prereqs: ["FNCE 3210", "FNCE 3215"], seniorOnly: true },
+  "FNCE 4390": { prereqs: ["FNCE 3210"] },
+  "INTL 4999": { seniorOnly: true },
+  "MGMT 3230": { prereqs: ["MGMT 2101"] },
+  "MGMT 3245": { prereqs: ["MGMT 2101"] },
+  "MGMT 3250": { prereqs: ["MGMT 2101"] },
+  "MGMT 3260": { prereqs: ["MGMT 2101"] },
+  "MGMT 3270": { prereqs: ["MGMT 2101"] },
+  "MGMT 4320": { prereqs: ["MGMT 2101"] },
+  "MGMT 4321": { prereqs: ["MGMT 2101"] },
+  "MGMT 4335": { prereqs: ["MGMT 2101"] },
+  "MGMT 4336": { prereqs: ["MGMT 4335"] },
+  "MGMT 4337": { prereqs: ["MGMT 4335", "FNCE 2101"] },
+  "MGMT 4338": { prereqs: ["MGMT 4335"] },
+  "MGMT 4339": { prereqs: ["MGMT 4335"] },
+  "MGMT 4340": { prereqs: ["MGMT 4335"] },
+  "MGMT 4375": { prereqs: ["MGMT 2101"] },
+  "MGMT 4376": { prereqs: ["MGMT 4375"] },
+  "MGMT 4377": { prereqs: ["MGMT 4375"] },
+  "MGMT 4378": { prereqs: ["MGMT 4375"] },
+  "MGMT 4379": { prereqs: ["MGMT 4375", "DATA 1101"] },
+  "MGMT 4380": { prereqs: ["MGMT 2101"], seniorOnly: true },
+  "MGMT 4385": { prereqs: ["MGMT 2101"] },
+  "MGMT 4390": { prereqs: ["MGMT 2101"] },
+  "MKTG 2261": { prereqs: ["MKTG 1101"] },
+  "MKTG 2212": { prereqs: ["MKTG 1101"] },
+  "MKTG 2311": { prereqs: ["MKTG 1101", "MATH 2217"] },
+  "MKTG 3310": { prereqs: ["MKTG 1101"] },
+  "MKTG 3315": { prereqs: ["MKTG 1101"] },
+  "MKTG 3320": { prereqs: ["MKTG 1101"] },
+  "MKTG 3325": { prereqs: ["MKTG 1101"] },
+  "MKTG 3330": { prereqs: ["MKTG 1101"] },
+  "MKTG 3335": { prereqs: ["MKTG 1101"] },
+  "MKTG 3340": { prereqs: ["MKTG 1101", "MATH 2217"] },
+  "MKTG 3345": { prereqs: ["MKTG 1101"] },
+  "MKTG 4312": { prereqs: ["MKTG 2311"], seniorOnly: true },
+});
+
+const PLACEHOLDER_REQUIREMENT_PREFIX = "ADVISING_PLACEHOLDER";
+function isPlaceholderCode(code) { return typeof code === "string" && code.startsWith(PLACEHOLDER_REQUIREMENT_PREFIX); }
+function makePlaceholderRequirement(label, credits = 3, pool = null) {
+  return { code: `${PLACEHOLDER_REQUIREMENT_PREFIX}_${label.replace(/[^A-Z0-9]+/gi, "_").toUpperCase()}`, label, credits, placeholder: true, pool };
+}
+
 function courseCodeFromPlanItem(item) {
   return normalizeCourseCode(typeof item === "string" ? item : item.label || item.code || "");
 }
@@ -575,35 +645,33 @@ function isSeniorYearByCredits(totalCredits) {
 }
 
 function canTakeCourse(code, completedOrPlannedSet, totalCreditsAtStartOfTerm) {
+  if (!code || isPlaceholderCode(code)) return true;
   const rules = COURSE_RULES[code] || {};
-
-  if (rules.seniorOnly && !isSeniorYearByCredits(totalCreditsAtStartOfTerm)) {
-    return false;
-  }
-
-  if (rules.prereqs?.some((prereq) => !completedOrPlannedSet.has(prereq))) {
-    return false;
-  }
-
+  if (rules.seniorOnly && !isSeniorYearByCredits(totalCreditsAtStartOfTerm)) return false;
+  if (rules.prereqs?.some((prereq) => !completedOrPlannedSet.has(prereq))) return false;
   return true;
+}
+
+function prerequisiteDepth(code, seen = new Set()) {
+  if (!code || isPlaceholderCode(code) || seen.has(code)) return 0;
+  seen.add(code);
+  const prereqs = COURSE_RULES[code]?.prereqs || [];
+  if (!prereqs.length) return 0;
+  return 1 + Math.max(...prereqs.map((p) => prerequisiteDepth(p, new Set(seen))));
 }
 
 function sortByPrerequisiteStructure(items) {
   return [...items].sort((a, b) => {
     const aCode = courseCodeFromPlanItem(a);
     const bCode = courseCodeFromPlanItem(b);
-
     if (aCode === "MGMT 4300" && bCode !== "MGMT 4300") return 1;
     if (bCode === "MGMT 4300" && aCode !== "MGMT 4300") return -1;
-
-    const aHasPrereqs = COURSE_RULES[aCode]?.prereqs?.length || 0;
-    const bHasPrereqs = COURSE_RULES[bCode]?.prereqs?.length || 0;
-
-    return aHasPrereqs - bHasPrereqs;
+    const aSenior = COURSE_RULES[aCode]?.seniorOnly ? 1 : 0;
+    const bSenior = COURSE_RULES[bCode]?.seniorOnly ? 1 : 0;
+    if (aSenior !== bSenior) return aSenior - bSenior;
+    return prerequisiteDepth(aCode) - prerequisiteDepth(bCode);
   });
 }
-
-
 
 const MAGIS_KNOWN = [
   { label: "One calculus course based on placement", codes: ["MATH 1121", "MATH 1122", "MATH 1141", "MATH 1142", "MATH 1171", "MATH 1172"] },
@@ -1533,71 +1601,92 @@ function countQualifyingCourses(courses) {
   return courses.filter((code) => inferCredits(code) >= 3).length;
 }
 
-function buildUpcomingSemester(remainingBusinessCore, missingProgramCodes, nextTerm, totalCredits, allCourses = []) {
+function normalizePlanItem(item) {
+  if (typeof item === "object" && item !== null) return { code: item.code || courseCodeFromPlanItem(item.label || ""), label: item.label || item.code || "Requirement", credits: Number.isFinite(item.credits) ? item.credits : inferCredits(item.code || ""), placeholder: Boolean(item.placeholder), pool: item.pool || null };
+  const cleaned = String(item).replace(/^•\s*/, "");
+  const code = courseCodeFromPlanItem(cleaned);
+  const match = cleaned.match(/\(([0-9]+) cr\)/i);
+  return { code, label: cleaned, credits: match ? Number.parseInt(match[1], 10) || inferCredits(code) : inferCredits(code), placeholder: isPlaceholderCode(code), pool: null };
+}
+function chooseDefaultOption(options, completedSet, inProgressSet, completedOrPlannedSet = new Set()) {
+  const normalized = (options || []).map((option) => typeof option === "string" ? { code: option, title: findKnownCourseTitle(option) } : option);
+  return normalized.find((option) => !completedSet.has(option.code) && !inProgressSet.has(option.code) && !completedOrPlannedSet.has(option.code)) || normalized.find((option) => !completedOrPlannedSet.has(option.code)) || normalized[0] || null;
+}
+function planItemFromCode(code, labelSuffix = "") {
+  const title = findKnownCourseTitle(code);
+  return { code, label: `${code}${title ? ` ${title}` : ""}${labelSuffix}`, credits: inferCredits(code), placeholder: false };
+}
+function representativePoolLabel(rule) {
+  const pool = rule.pool || {};
+  const prefixes = pool.prefixes || (pool.prefix ? [pool.prefix] : []);
+  const prefixText = prefixes.length ? prefixes.join("/") : "approved";
+  const levelText = pool.minLevel ? `${String(pool.minLevel).charAt(0)}000-level or higher ` : "";
+  return `${levelText}${prefixText} course approved for ${rule.label}`;
+}
+function collectPlanItemsFromProgramRules(programRequirementStatus, completed, inProgress, programs = parseProgramNames()) {
+  const completedSet = new Set(completed), inProgressSet = new Set(inProgress);
+  const allCourses = [...new Set([...completed, ...inProgress])];
+  const completedOrPlannedSet = new Set(allCourses);
+  const items = [];
+  const addItem = (item) => { const normalized = normalizePlanItem(item); if (!normalized.code && !normalized.placeholder) return; if (!normalized.placeholder && completedOrPlannedSet.has(normalized.code)) return; if (!items.some((existing) => existing.code === normalized.code && existing.label === normalized.label)) { items.push(normalized); if (!normalized.placeholder) completedOrPlannedSet.add(normalized.code); } };
+  for (const program of programs) {
+    const key = resolveProgramRequirementKey(program);
+    const definition = key ? PROGRAM_REQUIREMENTS[key] : null;
+    if (!definition) continue;
+    for (const rule of definition.rules) {
+      if (rule.type === "business_core" || rule.type === "dual_summary") continue;
+      if (rule.type === "course") { if (!completedSet.has(rule.code) && !inProgressSet.has(rule.code)) addItem(planItemFromCode(rule.code)); }
+      else if (rule.type === "fixed_group") { (rule.options || []).forEach((code) => { if (!completedSet.has(code) && !inProgressSet.has(code)) addItem(planItemFromCode(code)); }); }
+      else if (rule.type === "choose_list") { const chosen = (rule.options || []).filter((option) => completedSet.has(option.code) || inProgressSet.has(option.code)).length; for (let i = chosen; i < rule.count; i += 1) { const option = chooseDefaultOption(rule.options, completedSet, inProgressSet, completedOrPlannedSet); if (option) addItem(planItemFromCode(option.code, ` — selected from ${rule.label}`)); } }
+      else if (rule.type === "choose_any") { const explicitCodes = (rule.options || []).map((option) => typeof option === "string" ? option : option.code); const chosenExplicit = explicitCodes.filter((code) => completedSet.has(code) || inProgressSet.has(code)).length; const chosenPool = allCourses.filter((code) => matchesPool(code, rule.pool)).length; for (let i = chosenExplicit + chosenPool; i < rule.count; i += 1) { const optionCode = explicitCodes.find((code) => !completedOrPlannedSet.has(code)); if (optionCode) addItem(planItemFromCode(optionCode, ` — selected from ${rule.label}`)); else addItem(makePlaceholderRequirement(representativePoolLabel(rule), 3, rule.pool)); } }
+      else if (rule.type === "pool" || rule.type === "category") { const chosen = allCourses.filter((code) => matchesPool(code, rule.pool)).length; for (let i = chosen; i < rule.count; i += 1) addItem(makePlaceholderRequirement(representativePoolLabel(rule), 3, rule.pool)); }
+      else if (rule.type === "group_mix") { let chosen = 0; rule.groups.forEach((group) => group.options.forEach((option) => { if (completedSet.has(option.code) || inProgressSet.has(option.code)) chosen += 1; })); const flatOptions = rule.groups.flatMap((group) => group.options); for (let i = chosen; i < rule.count; i += 1) { const option = chooseDefaultOption(flatOptions, completedSet, inProgressSet, completedOrPlannedSet); if (option) addItem(planItemFromCode(option.code, ` — selected from ${rule.label}`)); } }
+    }
+  }
+  (programRequirementStatus?.missingCodes || []).forEach((code) => addItem(planItemFromCode(code)));
+  return sortByPrerequisiteStructure(items);
+}
+function buildInitialPlanItems(remainingBusinessCore, programPlanItems) { return sortByPrerequisiteStructure([...remainingBusinessCore.map(normalizePlanItem), ...programPlanItems.map(normalizePlanItem)]).filter((item) => item.credits > 0 || item.code === "DATA 1101L"); }
+function remainingQualifyingCourseGap(allCourses, planItems) { return Math.max(0, 40 - countQualifyingCourses(allCourses) - planItems.filter((item) => item.credits >= 3).length); }
+function graduationCreditTarget(totalCredits, remainingTo120, planItems, allCourses) { return Math.max(remainingTo120, planItems.reduce((sum, item) => sum + (item.credits || 0), 0) + remainingQualifyingCourseGap(allCourses, planItems) * 3); }
+function itemCanFitTerm(item, completedOrPlannedSet, runningCredits, termCredits, targetCredits) { if (!canTakeCourse(item.code, completedOrPlannedSet, runningCredits)) return false; if (item.credits === 0) return true; return termCredits + item.credits <= targetCredits || termCredits < 12; }
+function formatPlanItemLabel(item) { return item.placeholder ? `${item.label} (advisor/catalog confirmation required)` : item.label; }
+
+function buildUpcomingSemester(remainingBusinessCore, programPlanItems, nextTerm, totalCredits, allCourses = []) {
   const isSeniorYear = totalCredits >= 90;
   const remainingCreditsToGraduate = Math.max(0, 120 - totalCredits);
-  const targetCredits = isSeniorYear && remainingCreditsToGraduate < 15 ? remainingCreditsToGraduate : 15;
+  const planItems = buildInitialPlanItems(remainingBusinessCore, programPlanItems);
+  const requiredCredits = planItems.reduce((s, i) => s + i.credits, 0);
+  const targetCredits = isSeniorYear && remainingCreditsToGraduate < 15 ? Math.max(remainingCreditsToGraduate, Math.min(15, requiredCredits)) : 15;
   const picks = [];
   let pickedCredits = 0;
-
   const completedOrPlannedSet = new Set(allCourses);
-  const businessCoreItems = sortByPrerequisiteStructure(remainingBusinessCore);
-
-  businessCoreItems.forEach((item) => {
-    if (pickedCredits >= targetCredits) return;
-
-    const code = courseCodeFromPlanItem(item);
-    if (!canTakeCourse(code, completedOrPlannedSet, totalCredits)) return;
-
-    const match = item.match(/\(([0-9]+) cr\)/i);
-    const credits = match ? Number.parseInt(match[1], 10) : inferCredits(code);
-
-    picks.push(item.replace(/^•\s*/, ""));
-    pickedCredits += credits;
-    completedOrPlannedSet.add(code);
-
-    if (code === "DATA 1101" && remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")) {
-      picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
-      completedOrPlannedSet.add("DATA 1101L");
-    }
-  });
-
-  sortByPrerequisiteStructure(missingProgramCodes).forEach((code) => {
-    if (pickedCredits >= targetCredits) return;
-    if (!canTakeCourse(code, completedOrPlannedSet, totalCredits)) return;
-
-    const title = findKnownCourseTitle(code);
-    picks.push(title ? `${code} ${title}` : `${code} (program-specific requirement)`);
-    pickedCredits += inferCredits(code);
-    completedOrPlannedSet.add(code);
-  });
-
-  return [
-    `Recommended upcoming semester: ${nextTerm}`,
-    `Planned semester load: ${targetCredits || 0} credits${isSeniorYear && remainingCreditsToGraduate < 15 ? " because this appears to be the senior year and fewer credits are needed to finish" : " as the standard target load"}`,
-    ...picks.map((item) => `• ${item}`)
-  ].join("\n");
+  for (const item of planItems) {
+    if (pickedCredits >= targetCredits) break;
+    if (!itemCanFitTerm(item, completedOrPlannedSet, totalCredits, pickedCredits, targetCredits)) continue;
+    picks.push(formatPlanItemLabel(item));
+    pickedCredits += item.credits;
+    if (item.code) completedOrPlannedSet.add(item.code);
+    if (item.code === "DATA 1101" && !completedOrPlannedSet.has("DATA 1101L") && remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")) { picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101"); completedOrPlannedSet.add("DATA 1101L"); }
+  }
+  while (pickedCredits < targetCredits) { const gap = targetCredits - pickedCredits; const fillerCredits = gap >= 3 ? 3 : gap; picks.push(fillerCredits >= 3 ? "Free elective / Magis Core / approved overlap course" : `${fillerCredits}-credit remaining requirement`); pickedCredits += fillerCredits; }
+  return [`Recommended upcoming semester: ${nextTerm}`, `Planned semester load: ${pickedCredits || 0} credits${isSeniorYear && remainingCreditsToGraduate < 15 ? " because this appears to be the senior year and fewer credits are needed to finish" : " as the standard target load"}`, ...picks.map((item) => `• ${item}`)].join("\n");
 }
 
-function buildSequencingNotes(allCourses, remainingBusinessCore, missingProgramCodes) {
+function buildSequencingNotes(allCourses, remainingBusinessCore, programPlanItems) {
   const notes = [];
   const set = new Set(allCourses);
-
-  if (!set.has("ACCT 1011")) {
-    notes.push("⚠️ Take ACCT 1011 early because it supports ACCT 1012 and FNCE 2101 sequencing.");
-  }
-  if (!set.has("DATA 1101")) {
-    notes.push("⚠️ Schedule DATA 1101 and DATA 1101L together.");
-  }
-  if (remainingBusinessCore.some((item) => item.includes("MGMT 4300"))) {
-    notes.push("⚠️ Leave space for MGMT 4300 in the senior year.");
-  }
-  if (missingProgramCodes.length) {
-    notes.push(`Program-specific bottleneck watch: ${missingProgramCodes.slice(0, 6).join(", ")}.`);
-  }
-
+  const requiredCodes = buildInitialPlanItems(remainingBusinessCore, programPlanItems).map((item) => item.code).filter(Boolean);
+  if (!set.has("ACCT 1011")) notes.push("⚠️ Take ACCT 1011 early because it supports ACCT 1012 and FNCE 2101 sequencing.");
+  if (!set.has("MATH 2217")) notes.push("⚠️ MATH 2217 Statistics is required for Dolan students and supports analytics and marketing research sequencing.");
+  if (!set.has("DATA 1101")) notes.push("⚠️ Schedule DATA 1101 and DATA 1101L together.");
+  if (remainingBusinessCore.some((item) => item.includes("MGMT 4300"))) notes.push("⚠️ Leave MGMT 4300 for senior year; the planner will not schedule it before the senior-credit range.");
+  const bottlenecks = requiredCodes.filter((code) => (COURSE_RULES[code]?.prereqs || []).some((prereq) => !set.has(prereq))).slice(0, 8);
+  if (bottlenecks.length) notes.push(`Program-specific bottleneck watch: ${bottlenecks.join(", ")} have prerequisites that must be completed first.`);
+  if (programPlanItems.some((item) => item.placeholder)) notes.push("⚠️ Some open-pool electives are shown as advisor/catalog-confirmed choices because the catalog rule names a pool rather than a fixed course list.");
   notes.push("Use winter or summer courses if the credit math suggests you need help staying on an eight-semester timeline.");
   notes.push("If study abroad is still a goal, freshman or sophomore planning is the workable window noted in the study abroad advising sheet.");
+  notes.push("This estimate uses the most credit-efficient counting method for second majors/minors, but final confirmation depends on official catalog rules and advisor review.");
   notes.push("Download this plan and bring it to your advisor meeting for registration hold removal.");
   return notes.join("\n");
 }
@@ -1611,94 +1700,42 @@ function nextRegularTermLabel(termLabel) {
   return `Fall ${year}`;
 }
 
-function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term, totalCredits, remainingTo120, allCourses = []) {
-  const planItems = [];
-
-  sortByPrerequisiteStructure(remainingBusinessCore).forEach((item) => {
-    const cleaned = item.replace(/^•\s*/, "");
-    const code = courseCodeFromPlanItem(cleaned);
-    const match = cleaned.match(/\(([0-9]+) cr\)/i);
-
-    planItems.push({
-      code,
-      label: cleaned,
-      credits: match ? Number.parseInt(match[1], 10) || inferCredits(code) : inferCredits(code),
-    });
-  });
-
-  sortByPrerequisiteStructure(missingProgramCodes).forEach((code) => {
-    const title = findKnownCourseTitle(code);
-    planItems.push({
-      code,
-      label: title ? `${code} ${title}` : `${code} program requirement`,
-      credits: inferCredits(code),
-    });
-  });
-
-  let neededCredits = remainingTo120;
+function buildFullRemainingPlan(remainingBusinessCore, programPlanItems, term, totalCredits, remainingTo120, allCourses = []) {
+  const planItems = buildInitialPlanItems(remainingBusinessCore, programPlanItems);
+  let neededCredits = graduationCreditTarget(totalCredits, remainingTo120, planItems, allCourses);
   let termLabel = term.next;
   let runningCredits = totalCredits;
   const completedOrPlannedSet = new Set(allCourses);
   const semesters = [];
-
-  while (neededCredits > 0) {
-    const isFinalTerm = neededCredits < 15;
-    const targetCredits = isFinalTerm ? neededCredits : 15;
+  let safety = 0;
+  while (neededCredits > 0 && safety < 12) {
+    safety += 1;
+    const targetCredits = neededCredits < 15 ? neededCredits : 15;
     let termCredits = 0;
     const picks = [];
-
     let madeProgress = true;
-
     while (planItems.length && termCredits < targetCredits && madeProgress) {
       madeProgress = false;
-
       for (let i = 0; i < planItems.length; i += 1) {
         const nextItem = planItems[i];
-
-        if (!canTakeCourse(nextItem.code, completedOrPlannedSet, runningCredits)) {
-          continue;
-        }
-
+        if (!itemCanFitTerm(nextItem, completedOrPlannedSet, runningCredits, termCredits, targetCredits)) continue;
         planItems.splice(i, 1);
-        picks.push(nextItem.label);
+        picks.push(formatPlanItemLabel(nextItem));
         termCredits += nextItem.credits;
-        completedOrPlannedSet.add(nextItem.code);
+        if (nextItem.code) completedOrPlannedSet.add(nextItem.code);
         madeProgress = true;
-
-        if (nextItem.code === "DATA 1101") {
-          const labIndex = planItems.findIndex((item) => item.code === "DATA 1101L");
-          if (labIndex !== -1) {
-            const lab = planItems.splice(labIndex, 1)[0];
-            picks.push(`${lab.label} — take with DATA 1101`);
-            completedOrPlannedSet.add("DATA 1101L");
-          }
-        }
-
+        if (nextItem.code === "DATA 1101") { const labIndex = planItems.findIndex((item) => item.code === "DATA 1101L"); if (labIndex !== -1) { const lab = planItems.splice(labIndex, 1)[0]; picks.push(`${lab.label} — take with DATA 1101`); completedOrPlannedSet.add("DATA 1101L"); } }
         break;
       }
     }
-
-    while (termCredits < targetCredits) {
-      const remainingGap = targetCredits - termCredits;
-      const fillerCredits = remainingGap >= 3 ? 3 : remainingGap;
-      picks.push(fillerCredits >= 3 ? "Free elective / Magis Core / approved overlap course" : `${fillerCredits}-credit remaining requirement`);
-      termCredits += fillerCredits;
-    }
-
-    semesters.push([
-      `${termLabel} (${targetCredits} credits)`,
-      ...picks.map((item) => `• ${item}`)
-    ].join("\n"));
-
-    neededCredits = Math.max(0, neededCredits - targetCredits);
-    runningCredits += targetCredits;
+    while (termCredits < targetCredits) { const remainingGap = targetCredits - termCredits; const fillerCredits = remainingGap >= 3 ? 3 : remainingGap; picks.push(fillerCredits >= 3 ? "Free elective / Magis Core / approved overlap course" : `${fillerCredits}-credit remaining requirement`); termCredits += fillerCredits; }
+    semesters.push([`${termLabel} (${termCredits} credits)`, ...picks.map((item) => `• ${item}`)].join("\n"));
+    neededCredits = Math.max(0, neededCredits - termCredits);
+    runningCredits += termCredits;
     termLabel = nextRegularTermLabel(termLabel);
   }
-
-  return [
-    "Full remaining-semester plan through degree completion",
-    ...semesters
-  ].join("\n\n");
+  if (planItems.length) semesters.push(["Advisor review needed after planned semesters", ...planItems.map((item) => `• ${formatPlanItemLabel(item)} could not be placed automatically because of prerequisite/senior-standing constraints.`)].join("\n"));
+  return ["Full remaining-semester plan through degree completion", ...semesters].join("\n\n");
 }
 
 function getProgramInputSnapshot() {
@@ -1953,17 +1990,17 @@ async function buildPlannerSnapshot(completed, inProgress, programs = parseProgr
   const magisStatus = buildKnownMagisStatus(allCourses);
   const businessCoreStatus = buildBusinessCoreStatus(allCourses);
   const programRequirementStatus = await buildProgramRequirementStatus(completed, inProgress, programs);
-  const missingProgramCodes = programRequirementStatus.missingCodes.filter(
-    (code) => !allCourses.includes(code) && !BUSINESS_CORE.some((course) => course.code === code),
-  );
+  const programPlanItems = collectPlanItemsFromProgramRules(programRequirementStatus, completed, inProgress, programs)
+    .filter((item) => item.placeholder || (!allCourses.includes(item.code) && !BUSINESS_CORE.some((course) => course.code === item.code)));
+  const missingProgramCodes = programPlanItems.map((item) => item.code).filter((code) => code && !isPlaceholderCode(code));
   const completedCredits = countCredits(completed);
   const inProgressCredits = countCredits(inProgress);
   const totalCredits = completedCredits + inProgressCredits;
   const remainingTo120 = Math.max(0, 120 - totalCredits);
   const qualifyingCoursesRemaining = Math.max(0, 40 - countQualifyingCourses(allCourses));
   const prioritizedBusinessCoreRemaining = prioritizePrimaryMajorBusinessCore(businessCoreStatus.remaining);
-const upcoming = buildUpcomingSemester(prioritizedBusinessCoreRemaining, missingProgramCodes, term.next, totalCredits, allCourses);
-const fullPlan = buildFullRemainingPlan(prioritizedBusinessCoreRemaining, missingProgramCodes, term, totalCredits, remainingTo120, allCourses);
+const upcoming = buildUpcomingSemester(prioritizedBusinessCoreRemaining, programPlanItems, term.next, totalCredits, allCourses);
+const fullPlan = buildFullRemainingPlan(prioritizedBusinessCoreRemaining, programPlanItems, term, totalCredits, remainingTo120, allCourses);
   const loadExplanation =
     totalCredits >= 90 && remainingTo120 < 15
       ? `This planner recommended fewer than 15 credits because the student appears to be in the senior-year range with only ${remainingTo120} credits left to reach 120.`
@@ -1975,8 +2012,10 @@ const fullPlan = buildFullRemainingPlan(prioritizedBusinessCoreRemaining, missin
     `⚠️ Credits still needed to reach 120: ${remainingTo120}`,
     `⚠️ Remaining 3- or 4-credit courses needed to reach 40: ${qualifyingCoursesRemaining}`,
   ];
-  const plannerNote =
-    "• This no-credit version checks Magis Core, business core, and the local major/minor requirement set entered for this tool. Confirm final registration choices with your advisor.";
+  const efficientCountingNote = programs.length > 1
+    ? "• Double-major/minor counting: requirements from additional programs are treated as filling free-elective space wherever allowed, so the plan uses the least-additional-credit method."
+    : "• Single-program plan: free electives are kept available for Magis Core, interests, internships, or future minors.";
+  const plannerNote = `${efficientCountingNote} This no-credit version checks Magis Core, business core, and the local major/minor requirement set entered for this tool. Confirm final registration choices with your advisor.`;
   const analysis = [
     "Credit Math",
     ...creditMathLines,
@@ -1997,7 +2036,7 @@ const fullPlan = buildFullRemainingPlan(prioritizedBusinessCoreRemaining, missin
     "Planner Note",
     plannerNote,
   ].join("\n");
-  const sequencing = buildSequencingNotes(allCourses, businessCoreStatus.remaining, missingProgramCodes);
+  const sequencing = buildSequencingNotes(allCourses, businessCoreStatus.remaining, programPlanItems);
 
   return {
     completed,
@@ -2008,6 +2047,7 @@ const fullPlan = buildFullRemainingPlan(prioritizedBusinessCoreRemaining, missin
     businessCoreStatus,
     programRequirementStatus,
     missingProgramCodes,
+    programPlanItems,
     completedCredits,
     inProgressCredits,
     totalCredits,
