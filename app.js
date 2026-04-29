@@ -616,9 +616,33 @@ const COURSE_RULES = {
   "FNCE 4990": { seniorOnly: true },
 
   // Marketing sequencing
-  "MKTG 2212": { prereqs: ["MKTG 1101"] },
-  "MKTG 2311": { prereqs: ["MKTG 1101"] },
-  "MKTG 4312": { prereqs: ["MKTG 1101"] },
+  "MKTG 2212": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
+  "MKTG 2221": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
+  "MKTG 2231": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
+  "MKTG 2241": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
+  "MKTG 2251": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
+  "MKTG 2261": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
+  "MKTG 2271": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
+
+  "MKTG 2311": {
+    prereqs: ["MKTG 1101"],
+    anyPrereqs: ["ECON 0278", "MATH 1017", "MATH 2217", "PSYC 2810", "SOCI 3610"],
+    sophomoreOnly: true
+  },
+
+  "MKTG 2980": { sophomoreOnly: true },
+
+  "MKTG 3321": { prereqs: ["MKTG 1101"], juniorOnly: true },
+  "MKTG 3322": { prereqs: ["MKTG 1101"], juniorOnly: true },
+  "MKTG 3331": { prereqs: ["MKTG 1101"], juniorOnly: true },
+  "MKTG 3332": { prereqs: ["MKTG 1101"], juniorOnly: true },
+  "MKTG 3341": { prereqs: ["MKTG 1101"], juniorOnly: true },
+  "MKTG 3342": { prereqs: ["MKTG 1101"], juniorOnly: true },
+
+  "MKTG 3980": { juniorOnly: true },
+
+  "MKTG 4312": { prereqs: ["MKTG 1101"], seniorOnly: true },
+  "MKTG 4990": { prereqs: ["MKTG 1101"], seniorOnly: true },
 
   // Management sequencing
   "MGMT 3235": { prereqs: ["MGMT 2101"] },
