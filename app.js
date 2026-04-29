@@ -597,8 +597,26 @@ const COURSE_RULES = {
   "ACCT 4310": { prereqs: ["ACCT 2204"], seniorOnly: true },
 
   // Finance sequencing
-  "FNCE 3210": { prereqs: ["FNCE 2101"] },
-  "FNCE 3215": { prereqs: ["FNCE 2101"] },
+  "FNCE 2101": { 
+    prereqs: ["ACCT 1011", "ECON 1011", "ECON 1012"], 
+    sophomoreOnly: true 
+  },
+  "FNCE 2980": { sophomoreOnly: true },
+  "FNCE 3200": { prereqs: ["FNCE 2101"], juniorOnly: true },
+  "FNCE 3210": { prereqs: ["FNCE 2101"], juniorOnly: true },
+  "FNCE 3215": { prereqs: ["FNCE 2101"], juniorOnly: true },
+  "FNCE 3235": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
+  "FNCE 3340": { anyPrereqs: ["ECON 1011", "ECON 1012", "FNCE 2101"] },
+  "FNCE 3980": { juniorOnly: true },
+  "FNCE 4240": { prereqs: ["FNCE 3215"] },
+  "FNCE 4300": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
+  "FNCE 4305": { prereqs: ["FNCE 3210", "FNCE 3215"] },
+  "FNCE 4310": { prereqs: ["FNCE 3210"] },
+  "FNCE 4315": { prereqs: ["FNCE 3210"] },
+  "FNCE 4320": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
+  "FNCE 4325": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
+  "FNCE 4330": { prereqs: ["FNCE 3210", "FNCE 3215"], seniorOnly: true },
+  "FNCE 4990": { seniorOnly: true },
 
   // Marketing sequencing
   "MKTG 2212": { prereqs: ["MKTG 1101"] },
@@ -626,6 +644,10 @@ function canTakeCourse(code, completedOrPlannedSet, totalCreditsAtStartOfTerm) {
   }
 
   if (rules.juniorOnly && totalCreditsAtStartOfTerm < 60) {
+    return false;
+  }
+
+  if (rules.sophomoreOnly && totalCreditsAtStartOfTerm < 30) {
     return false;
   }
 
