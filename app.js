@@ -1789,16 +1789,6 @@ if (hasSameTermPrereq) {
   continue;
 }
 
-const rules = COURSE_RULES[nextItem.code] || {};
-
-const hasSameTermPrereq =
-  rules.prereqs?.some((prereq) => pickedCodesThisTerm.has(prereq)) ||
-  rules.anyPrereqs?.some((prereq) => pickedCodesThisTerm.has(prereq));
-
-if (hasSameTermPrereq) {
-  continue;
-}
-
         planItems.splice(i, 1);
         if (
   nextItem.code === "FNCE 4330" &&
