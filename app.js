@@ -1009,30 +1009,64 @@ function buildKnownMagisStatus(allCourses) {
   const fulfilled = [];
   const remaining = [];
 
-  MAGIS_KNOWN.forEach((item) => {
-    const hit = item.codes.find((code) => set.has(code));
+  const hasAny = (codes) => codes.find((code) => set.has(normalizeCourseCode(code)));
+  const hasPrefixLevel = (prefixes, levelTest) =>
+    allCourses.find((code) => {
+      const match = code.match(/^([A-Z]{4})\s(\d{4})/);
+      return match && prefixes.includes(match[1]) && levelTest(Number(match[2]));
+    });
+
+  const addRequirement = (section, label, hit) => {
     if (hit) {
-      fulfilled.push(`✅ ${item.label}: ${hit}`);
+      fulfilled.push(`✅ ${section}: ${label}: ${hit}`);
     } else {
-      remaining.push(`• ${item.label}`);
+      remaining.push(`• ${section}: ${label}`);
     }
+  };
+
+  // Tier I: Orientation
+  addRequirement("Tier I Orientation", "ENGL 1001 Introduction to Rhetoric and Composition", hasAny(["ENGL 1001"]));
+  addRequirement("Tier I Orientation", "One HIST 1000-level course or AMED 1115/1116", hasPrefixLevel(["HIST"], (n) => n >= 1000 && n < 2000) || hasAny(["AMED 1115", "AMED 1116"]));
+  addRequirement("Tier I Orientation", "One MATH 1000- or 2000-level course based on placement; MATH 1011 does not count", hasPrefixLevel(["MATH"], (n) => n >= 1000 && n < 3000 && n !== 1011));
+  addRequirement("Tier I Orientation", "One modern/classical language course based on placement", allCourses.find((code) => LANGUAGE_PREFIXES.some((prefix) => code.startsWith(prefix))));
+  addRequirement("Tier I Orientation", "PHIL 1101 Introduction to Philosophy", hasAny(["PHIL 1101"]));
+  addRequirement("Tier I Orientation", "One RLST 1000-level course", hasPrefixLevel(["RLST", "RELS"], (n) => n >= 1000 && n < 2000));
+  addRequirement("Tier I Orientation", "One additional modern/classical language or mathematics course", allCourses.filter((code) =>
+    LANGUAGE_PREFIXES.some((prefix) => code.startsWith(prefix)) ||
+    (code.startsWith("MATH ") && code !== "MATH 1011")
+  ).length >= 2 ? "second language/math course detected" : "");
+
+  // Tier II: Exploration
+  const behavioralSocialPrefixes = ["COMM", "ECON", "POLI", "PSYC", "SOCI", "ANTH"];
+  const behavioralSocial = allCourses.filter((code) =>
+    behavioralSocialPrefixes.some((prefix) => code.startsWith(prefix)) &&
+    !["PSYC 2610", "ANTH 1200", "ANTH 1210"].includes(code)
+  );
+  addRequirement("Tier II Exploration", "Two Behavioral and Social Sciences courses", behavioralSocial.length >= 2 ? behavioralSocial.slice(0, 2).join(", ") : "");
+
+  const hprDisciplines = ["HIST", "PHIL", "RLST", "RELS"];
+  const hprCourses = allCourses.filter((code) => {
+    const match = code.match(/^([A-Z]{4})\s(\d{4})/);
+    return match && hprDisciplines.includes(match[1]) && Number(match[2]) >= 2000 && Number(match[2]) < 4000;
   });
+  const hprUniqueDisciplines = new Set(hprCourses.map((code) => code.split(" ")[0]));
+  addRequirement("Tier II Exploration", "Two 2000- or 3000-level HIST/PHIL/RLST courses from two different disciplines", hprCourses.length >= 2 && hprUniqueDisciplines.size >= 2 ? hprCourses.slice(0, 2).join(", ") : "");
 
-  const scienceCourses = allCourses.filter((code) => NATURAL_SCIENCE_PREFIXES.some((prefix) => code.startsWith(prefix)));
-  if (scienceCourses.length >= 2) {
-    fulfilled.push(`✅ Natural sciences: ${scienceCourses.slice(0, 2).join(", ")}`);
-  } else {
-    remaining.push(`• Natural sciences: ${Math.max(0, 2 - scienceCourses.length)} more needed`);
-  }
+  const literaturePrefixes = ["CLST", "ENGL", ...LANGUAGE_PREFIXES];
+  addRequirement("Tier II Exploration", "One Literature course from Classics, English, or Modern Languages and Literatures", hasPrefixLevel(literaturePrefixes, (n) => n >= 1000));
 
-  const language = allCourses.find((code) => LANGUAGE_PREFIXES.some((prefix) => code.startsWith(prefix)));
-  if (language) {
-    fulfilled.push(`✅ Language course: ${language}`);
-  } else {
-    remaining.push("• One language course based on placement");
-  }
+  const scienceCourses = allCourses.filter((code) =>
+    NATURAL_SCIENCE_PREFIXES.some((prefix) => code.startsWith(prefix)) ||
+    ["ANTH 1200", "ANTH 1210", "PSYC 2610"].includes(code)
+  );
+  addRequirement("Tier II Exploration", "Two Natural Sciences courses", scienceCourses.length >= 2 ? scienceCourses.slice(0, 2).join(", ") : "");
 
-  remaining.push("• Remaining Magis Core areas should be confirmed with the catalog and MAGIS PDF");
+  const artsPrefixes = ["AHVC", "FTMA", "MUSC", "SART", "THEA"];
+  addRequirement("Tier II Exploration", "One 1000-level Visual and Performing Arts course", hasPrefixLevel(artsPrefixes, (n) => n >= 1000 && n < 2000));
+
+  remaining.push("• Signature Elements: Confirm seven attributes in registration system: MSID; MSJ1; MSJ2; MSJR; two MWAC courses; and one additional MWAC or MWID course.");
+  remaining.push("• Signature Elements note: Magis Core courses can double up as Signature Elements when the course carries the approved attribute. Some Signature Elements may also be fulfilled in the major, as allowed by the catalog.");
+
   return { fulfilled, remaining };
 }
 
