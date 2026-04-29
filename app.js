@@ -2228,41 +2228,40 @@ if (isFileProtocol()) {
     "Open Mr. Advisor from GitHub Pages or through a local server, not by double-clicking the HTML file. For local use, start node server.mjs and open http://127.0.0.1:3000.";
 }
 /*******************************************************
- DOLAN ADVISING PATCH: stricter prerequisites, standing,
- discipline-priority core sequencing, DATA 1101L de-dupe,
- and accounting sophomore-year sequencing.
+/*******************************************************
+ DOLAN ADVISING PATCH v2: major-specific sophomore-fall
+ sequencing, DATA 1101L de-dupe, and stricter prerequisite
+ / standing enforcement for generated plans.
 *******************************************************/
 
 Object.assign(PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES, {
+  "finance major": ["FNCE 2101"],
+  "finance": ["FNCE 2101"],
+  "marketing major": ["MKTG 1101"],
+  "marketing": ["MKTG 1101"],
+  "management major": ["MGMT 2101"],
+  "management": ["MGMT 2101"],
+  "business analytics major": ["DATA 1101"],
+  "business analytics": ["DATA 1101"],
   "analytics major": ["DATA 1101"],
   "analytics": ["DATA 1101"],
+  "international business major": ["INTL 2101"],
+  "international business": ["INTL 2101"],
+  // Accounting's key sophomore-fall discipline course is ACCT 2203, which is program-specific rather than business-core.
+  // FNCE 2101 is also explicitly prioritized for accounting majors per Dolan sequencing.
   "accounting major": ["FNCE 2101", "ACCT 1011", "ACCT 1012"],
   "accounting": ["FNCE 2101", "ACCT 1011", "ACCT 1012"],
 });
 
-const PATCH_PRIMARY_MAJOR_PROGRAM_PRIORITIES = {
-  "accounting major": ["ACCT 2203", "ACCT 2204", "ACCT 3255", "ACCT 3330", "ACCT 3343", "ACCT 4310"],
-  "accounting": ["ACCT 2203", "ACCT 2204", "ACCT 3255", "ACCT 3330", "ACCT 3343", "ACCT 4310"],
-  "finance major": ["FNCE 3210", "FNCE 3215", "FNCE 4330"],
-  "finance": ["FNCE 3210", "FNCE 3215", "FNCE 4330"],
-  "marketing major": ["MKTG 2212", "MKTG 2311", "MKTG 4312"],
-  "marketing": ["MKTG 2212", "MKTG 2311", "MKTG 4312"],
-  "business analytics major": ["DATA 3210", "DATA 3260", "DATA 4310", "DATA 4315", "DATA 4999"],
-  "business analytics": ["DATA 3210", "DATA 3260", "DATA 4310", "DATA 4315", "DATA 4999"],
-  "analytics": ["DATA 3210", "DATA 3260", "DATA 4310", "DATA 4315", "DATA 4999"],
-  "management major": ["MGMT 3235", "MGMT 3240", "MGMT 4385", "MGMT 4390"],
-  "management": ["MGMT 3235", "MGMT 3240", "MGMT 4385", "MGMT 4390"],
-  "international business major": ["INTL 1050", "INTL 1051", "INTL 1052", "INTL 4999"],
-  "international business": ["INTL 1050", "INTL 1051", "INTL 1052", "INTL 4999"],
-  "economics major": ["ECON 3204", "ECON 3205"],
-  "economics": ["ECON 3204", "ECON 3205"],
-  "sports business major": ["DATA 3335", "MGMT 4375", "MKTG 2261"],
-  "sports business": ["DATA 3335", "MGMT 4375", "MKTG 2261"],
-};
-
 const PATCH_COURSE_ALIASES = {
   "FNCE 2010": "FNCE 2101",
   "FNCE2010": "FNCE 2101",
+  "FNCE2101": "FNCE 2101",
+  "MKTG1101": "MKTG 1101",
+  "ACCT2203": "ACCT 2203",
+  "ACCT2204": "ACCT 2204",
+  "DATA1101": "DATA 1101",
+  "DATA1101L": "DATA 1101L",
   "FYE": "FYEX",
 };
 
@@ -2273,12 +2272,13 @@ const PATCH_CALCULUS_OR_HIGHER_OPTIONS = ["MATH 1016", "MATH 1121", "MATH 1122",
 Object.assign(COURSE_RULES, {
   "ACCT 1012": { prereqs: ["ACCT 1011"], recommendedYear: 1 },
   "DATA 1101L": { corequisite: ["DATA 1101"], credits: 0, mustTakeWith: "DATA 1101" },
-  "FNCE 2101": { prereqs: ["ACCT 1011", "ECON 1011", "ECON 1012"], anyOf: PATCH_CALCULUS_OR_HIGHER_OPTIONS, standing: "sophomore", recommendedYear: 2 },
-  "MGMT 2101": { standing: "sophomore", recommendedYear: 2 },
+  "FNCE 2101": { prereqs: ["ACCT 1011", "ECON 1011", "ECON 1012"], anyOf: PATCH_CALCULUS_OR_HIGHER_OPTIONS, standing: "sophomore", recommendedYear: 2, recommendedTerm: "Fall" },
+  "MGMT 2101": { standing: "sophomore", recommendedYear: 2, recommendedTerm: "Fall" },
+  "MKTG 1101": { standing: "sophomore", recommendedYear: 2, recommendedTerm: "Fall" },
   "MGMT 4300": { standing: "senior", seniorOnly: true },
 
-  "ACCT 2203": { prereqs: ["ACCT 1011"], recommendedYear: 2, recommendedTerm: "Fall" },
-  "ACCT 2204": { prereqs: ["ACCT 2203"], recommendedYear: 2, recommendedTerm: "Spring" },
+  "ACCT 2203": { prereqs: ["ACCT 1011"], standing: "sophomore", recommendedYear: 2, recommendedTerm: "Fall" },
+  "ACCT 2204": { prereqs: ["ACCT 2203"], standing: "sophomore", recommendedYear: 2, recommendedTerm: "Spring" },
   "ACCT 2250": {},
   "ACCT 2265": { prereqs: ["ACCT 2203"] },
   "ACCT 2980": { standing: "sophomore" },
@@ -2404,6 +2404,18 @@ function extractCourseCodes(text) {
   return [...new Set(matches.map(normalizeCourseCode).filter(Boolean))];
 }
 
+function patchPrimaryMajor() {
+  return normalizeProgramLabel(primaryMajorInput.value.trim());
+}
+
+function patchIsAccountingPrimaryMajor() {
+  return ["accounting", "accounting major"].includes(patchPrimaryMajor());
+}
+
+function patchIsFallTermLabel(termLabel) { return /^Fall\b/i.test(String(termLabel || "")); }
+function patchIsSpringTermLabel(termLabel) { return /^Spring\b/i.test(String(termLabel || "")); }
+function patchIsSophomoreYearStart(credits) { return credits >= 24 && credits < 60; }
+
 function patchHasCompletedAny(completedSet, options = []) {
   return options.some((code) => completedSet.has(normalizeCourseCode(code)));
 }
@@ -2418,31 +2430,56 @@ function patchStandingRequirementMet(rule, totalCreditsAtStartOfTerm) {
   return totalCreditsAtStartOfTerm >= (PATCH_STANDING_CREDIT_MINIMUMS[rule.standing] || 0);
 }
 
-function patchGetPrimaryMajorProgramPriorities() {
-  const primaryMajor = normalizeProgramLabel(primaryMajorInput.value.trim());
-  return PATCH_PRIMARY_MAJOR_PROGRAM_PRIORITIES[primaryMajor] || [];
+function patchMajorDisciplinePriorityCodes() {
+  const major = patchPrimaryMajor();
+  const map = {
+    "finance": ["FNCE 2101"],
+    "finance major": ["FNCE 2101"],
+    "marketing": ["MKTG 1101"],
+    "marketing major": ["MKTG 1101"],
+    "management": ["MGMT 2101"],
+    "management major": ["MGMT 2101"],
+    "business analytics": ["DATA 1101"],
+    "business analytics major": ["DATA 1101"],
+    "analytics": ["DATA 1101"],
+    "analytics major": ["DATA 1101"],
+    "international business": ["INTL 2101"],
+    "international business major": ["INTL 2101"],
+    "accounting": ["FNCE 2101", "ACCT 2203"],
+    "accounting major": ["FNCE 2101", "ACCT 2203"],
+  };
+  return map[major] || [];
 }
 
-function patchMajorProgramPriorityRank(code) {
-  const priorities = patchGetPrimaryMajorProgramPriorities();
-  const idx = priorities.indexOf(normalizeCourseCode(code));
-  return idx === -1 ? 999 : idx;
-}
+function patchCoursePriorityRank(code, termLabel = "", creditsAtStart = 0) {
+  const normalized = normalizeCourseCode(code);
+  const primary = patchPrimaryMajor();
+  const sophomoreFall = patchIsFallTermLabel(termLabel) && patchIsSophomoreYearStart(creditsAtStart);
+  const sophomoreSpring = patchIsSpringTermLabel(termLabel) && patchIsSophomoreYearStart(creditsAtStart);
 
-function patchIsAccountingPrimaryMajor() {
-  const primaryMajor = normalizeProgramLabel(primaryMajorInput.value.trim());
-  return primaryMajor === "accounting" || primaryMajor === "accounting major";
-}
+  if (sophomoreFall) {
+    const majorCodes = patchMajorDisciplinePriorityCodes();
+    const idx = majorCodes.indexOf(normalized);
+    if (idx !== -1) return idx;
+    if ((primary === "accounting" || primary === "accounting major") && normalized === "FNCE 2101") return 0;
+    if ((primary === "accounting" || primary === "accounting major") && normalized === "ACCT 2203") return 1;
+  }
 
-function patchIsFallTermLabel(termLabel) { return /^Fall\b/i.test(String(termLabel || "")); }
-function patchIsSpringTermLabel(termLabel) { return /^Spring\b/i.test(String(termLabel || "")); }
+  if (sophomoreSpring && (primary === "accounting" || primary === "accounting major") && normalized === "ACCT 2204") return 0;
+
+  if (normalized === "DATA 1101") return 20;
+  if (normalized === "DATA 1101L") return 21;
+  if (normalized === "MGMT 4300") return 999;
+  return 100;
+}
 
 function canTakeCourse(code, completedBeforeTermSet, totalCreditsAtStartOfTerm, plannedThisTermSet = new Set()) {
-  const normalizedCode = normalizeCourseCode(code);
-  if (!normalizedCode || isPlaceholderCode(normalizedCode)) return true;
-  const rules = COURSE_RULES[normalizedCode] || {};
-  const completedSet = completedBeforeTermSet instanceof Set ? completedBeforeTermSet : new Set(completedBeforeTermSet || []);
-  const plannedSet = plannedThisTermSet instanceof Set ? plannedThisTermSet : new Set(plannedThisTermSet || []);
+  const normalized = normalizeCourseCode(code);
+  if (!normalized || isPlaceholderCode(normalized)) return true;
+  const rules = COURSE_RULES[normalized] || {};
+  const completedSet = new Set([...completedBeforeTermSet].map(normalizeCourseCode));
+  const plannedSet = new Set([...plannedThisTermSet].map(normalizeCourseCode));
+
   if (!patchStandingRequirementMet(rules, totalCreditsAtStartOfTerm)) return false;
   if (rules.prereqs && !patchHasCompletedAll(completedSet, rules.prereqs)) return false;
   if (rules.anyOf && !patchHasCompletedAny(completedSet, rules.anyOf)) return false;
@@ -2462,9 +2499,6 @@ function sortByPrerequisiteStructure(items) {
     if (aCode === "DATA 1101L" && bCode === "DATA 1101") return 1;
     if (aCode === "MGMT 4300" && bCode !== "MGMT 4300") return 1;
     if (bCode === "MGMT 4300" && aCode !== "MGMT 4300") return -1;
-    const aMajorRank = patchMajorProgramPriorityRank(aCode);
-    const bMajorRank = patchMajorProgramPriorityRank(bCode);
-    if (aMajorRank !== bMajorRank) return aMajorRank - bMajorRank;
     const standingOrder = { sophomore: 1, junior: 2, senior: 3 };
     const aStanding = standingOrder[COURSE_RULES[aCode]?.standing] || (COURSE_RULES[aCode]?.seniorOnly ? 3 : 0);
     const bStanding = standingOrder[COURSE_RULES[bCode]?.standing] || (COURSE_RULES[bCode]?.seniorOnly ? 3 : 0);
@@ -2488,11 +2522,42 @@ function buildInitialPlanItems(remainingBusinessCore, programPlanItems) {
   return sortByPrerequisiteStructure(rawItems);
 }
 
+function patchSortPlanItemsForTerm(items, termLabel, creditsAtStart) {
+  return [...items].sort((a, b) => {
+    const aRank = patchCoursePriorityRank(a.code, termLabel, creditsAtStart);
+    const bRank = patchCoursePriorityRank(b.code, termLabel, creditsAtStart);
+    if (aRank !== bRank) return aRank - bRank;
+    return sortByPrerequisiteStructure([a, b])[0] === a ? -1 : 1;
+  });
+}
+
 function itemCanFitTerm(item, completedBeforeTermSet, plannedThisTermSet, runningCredits, termCredits, targetCredits) {
   if (item.code === "DATA 1101L") return plannedThisTermSet.has("DATA 1101") || completedBeforeTermSet.has("DATA 1101");
   if (!canTakeCourse(item.code, completedBeforeTermSet, runningCredits, plannedThisTermSet)) return false;
   if (item.credits === 0) return true;
   return termCredits + item.credits <= targetCredits || termCredits < 12;
+}
+
+function patchAddCourseToTerm(code, planItems, picks, completedBeforeTermSet, plannedThisTermSet, runningCredits, termCredits, targetCredits) {
+  const idx = planItems.findIndex((item) => item.code === code);
+  if (idx === -1) return termCredits;
+  const item = planItems[idx];
+  if (!itemCanFitTerm(item, completedBeforeTermSet, plannedThisTermSet, runningCredits, termCredits, targetCredits)) return termCredits;
+  planItems.splice(idx, 1);
+  picks.push(formatPlanItemLabel(item));
+  plannedThisTermSet.add(item.code);
+  return termCredits + item.credits;
+}
+
+function patchAddDataLabIfNeeded(planItems, picks, completedBeforeTermSet, plannedThisTermSet) {
+  if (completedBeforeTermSet.has("DATA 1101L") || plannedThisTermSet.has("DATA 1101L")) return;
+  if (!plannedThisTermSet.has("DATA 1101")) return;
+  const labIndex = planItems.findIndex((item) => item.code === "DATA 1101L");
+  if (labIndex !== -1) {
+    const lab = planItems.splice(labIndex, 1)[0];
+    picks.push(`${lab.label} — take with DATA 1101`);
+    plannedThisTermSet.add("DATA 1101L");
+  }
 }
 
 function buildUpcomingSemester(remainingBusinessCore, programPlanItems, nextTerm, totalCredits, allCourses = []) {
@@ -2506,17 +2571,15 @@ function buildUpcomingSemester(remainingBusinessCore, programPlanItems, nextTerm
   const completedBeforeTermSet = new Set(allCourses.map(normalizeCourseCode));
   const plannedThisTermSet = new Set();
 
-  if (patchIsAccountingPrimaryMajor() && patchIsFallTermLabel(nextTerm)) {
-    for (const code of ["FNCE 2101", "ACCT 2203"]) {
-      const idx = planItems.findIndex((item) => item.code === code);
-      if (idx === -1) continue;
-      const item = planItems[idx];
-      if (!itemCanFitTerm(item, completedBeforeTermSet, plannedThisTermSet, totalCredits, pickedCredits, targetCredits)) continue;
-      planItems.splice(idx, 1);
-      picks.push(formatPlanItemLabel(item));
-      plannedThisTermSet.add(item.code);
-      pickedCredits += item.credits;
+  planItems = patchSortPlanItemsForTerm(planItems, nextTerm, totalCredits);
+
+  if (patchIsFallTermLabel(nextTerm) && patchIsSophomoreYearStart(totalCredits)) {
+    for (const code of patchMajorDisciplinePriorityCodes()) {
+      pickedCredits = patchAddCourseToTerm(code, planItems, picks, completedBeforeTermSet, plannedThisTermSet, totalCredits, pickedCredits, targetCredits);
     }
+  }
+  if (patchIsSpringTermLabel(nextTerm) && patchIsSophomoreYearStart(totalCredits) && patchIsAccountingPrimaryMajor()) {
+    pickedCredits = patchAddCourseToTerm("ACCT 2204", planItems, picks, completedBeforeTermSet, plannedThisTermSet, totalCredits, pickedCredits, targetCredits);
   }
 
   for (const item of planItems) {
@@ -2526,17 +2589,16 @@ function buildUpcomingSemester(remainingBusinessCore, programPlanItems, nextTerm
     picks.push(formatPlanItemLabel(item));
     pickedCredits += item.credits;
     if (item.code) plannedThisTermSet.add(item.code);
-    if (item.code === "DATA 1101" && !completedBeforeTermSet.has("DATA 1101L") && !plannedThisTermSet.has("DATA 1101L") && remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")) {
-      picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
-      plannedThisTermSet.add("DATA 1101L");
-    }
+    patchAddDataLabIfNeeded(planItems, picks, completedBeforeTermSet, plannedThisTermSet);
   }
+
   while (pickedCredits < targetCredits) {
     const gap = targetCredits - pickedCredits;
     const fillerCredits = gap >= 3 ? 3 : gap;
     picks.push(fillerCredits >= 3 ? "Free elective / Magis Core / approved overlap course" : `${fillerCredits}-credit remaining requirement`);
     pickedCredits += fillerCredits;
   }
+
   return [
     `Recommended upcoming semester: ${nextTerm}`,
     `Planned semester load: ${pickedCredits || 0} credits${isSeniorYear && remainingCreditsToGraduate < 15 ? " because this appears to be the senior year and fewer credits are needed to finish" : " as the standard target load"}`,
@@ -2552,6 +2614,7 @@ function buildFullRemainingPlan(remainingBusinessCore, programPlanItems, term, t
   const completedOrPlannedSet = new Set(allCourses.map(normalizeCourseCode));
   const semesters = [];
   let safety = 0;
+
   while (neededCredits > 0 && safety < 12) {
     safety += 1;
     const targetCredits = neededCredits < 15 ? neededCredits : 15;
@@ -2560,18 +2623,15 @@ function buildFullRemainingPlan(remainingBusinessCore, programPlanItems, term, t
     const termStartSet = new Set(completedOrPlannedSet);
     const plannedThisTermSet = new Set();
 
-    const termPriority = [];
-    if (patchIsAccountingPrimaryMajor() && patchIsFallTermLabel(termLabel)) termPriority.push("FNCE 2101", "ACCT 2203");
-    if (patchIsAccountingPrimaryMajor() && patchIsSpringTermLabel(termLabel)) termPriority.push("ACCT 2204");
-    for (const code of termPriority) {
-      const idx = planItems.findIndex((item) => item.code === code);
-      if (idx === -1) continue;
-      const item = planItems[idx];
-      if (!itemCanFitTerm(item, termStartSet, plannedThisTermSet, runningCredits, termCredits, targetCredits)) continue;
-      planItems.splice(idx, 1);
-      picks.push(formatPlanItemLabel(item));
-      termCredits += item.credits;
-      if (item.code) plannedThisTermSet.add(item.code);
+    planItems = patchSortPlanItemsForTerm(planItems, termLabel, runningCredits);
+
+    if (patchIsFallTermLabel(termLabel) && patchIsSophomoreYearStart(runningCredits)) {
+      for (const code of patchMajorDisciplinePriorityCodes()) {
+        termCredits = patchAddCourseToTerm(code, planItems, picks, termStartSet, plannedThisTermSet, runningCredits, termCredits, targetCredits);
+      }
+    }
+    if (patchIsSpringTermLabel(termLabel) && patchIsSophomoreYearStart(runningCredits) && patchIsAccountingPrimaryMajor()) {
+      termCredits = patchAddCourseToTerm("ACCT 2204", planItems, picks, termStartSet, plannedThisTermSet, runningCredits, termCredits, targetCredits);
     }
 
     let madeProgress = true;
@@ -2585,31 +2645,29 @@ function buildFullRemainingPlan(remainingBusinessCore, programPlanItems, term, t
         picks.push(formatPlanItemLabel(nextItem));
         termCredits += nextItem.credits;
         if (nextItem.code) plannedThisTermSet.add(nextItem.code);
+        patchAddDataLabIfNeeded(planItems, picks, termStartSet, plannedThisTermSet);
         madeProgress = true;
-        if (nextItem.code === "DATA 1101" && !completedOrPlannedSet.has("DATA 1101L") && !plannedThisTermSet.has("DATA 1101L")) {
-          const labIndex = planItems.findIndex((item) => item.code === "DATA 1101L");
-          if (labIndex !== -1) {
-            const lab = planItems.splice(labIndex, 1)[0];
-            picks.push(`${lab.label} — take with DATA 1101`);
-            plannedThisTermSet.add("DATA 1101L");
-          }
-        }
         break;
       }
     }
+
     while (termCredits < targetCredits) {
       const remainingGap = targetCredits - termCredits;
       const fillerCredits = remainingGap >= 3 ? 3 : remainingGap;
       picks.push(fillerCredits >= 3 ? "Free elective / Magis Core / approved overlap course" : `${fillerCredits}-credit remaining requirement`);
       termCredits += fillerCredits;
     }
+
     plannedThisTermSet.forEach((code) => completedOrPlannedSet.add(code));
     semesters.push([`${termLabel} (${termCredits} credits)`, ...picks.map((item) => `• ${item}`)].join("\n"));
     neededCredits = Math.max(0, neededCredits - termCredits);
     runningCredits += termCredits;
     termLabel = nextRegularTermLabel(termLabel);
   }
-  if (planItems.length) semesters.push(["Advisor review needed after planned semesters", ...planItems.map((item) => `• ${formatPlanItemLabel(item)} could not be placed automatically because of prerequisite/senior-standing constraints.`)].join("\n"));
+
+  if (planItems.length) {
+    semesters.push(["Advisor review needed after planned semesters", ...planItems.map((item) => `• ${formatPlanItemLabel(item)} could not be placed automatically because of prerequisite/senior-standing constraints.`)].join("\n"));
+  }
   return ["Full remaining-semester plan through degree completion", ...semesters].join("\n\n");
 }
 
@@ -2617,8 +2675,9 @@ const __originalBuildSequencingNotes = buildSequencingNotes;
 function buildSequencingNotes(allCourses, remainingBusinessCore, programPlanItems) {
   const base = __originalBuildSequencingNotes(allCourses, remainingBusinessCore, programPlanItems);
   const extra = [];
-  extra.push("The generated plan now checks prerequisites using courses completed before the term starts; a prerequisite cannot be satisfied by another course planned in the same semester unless it is explicitly modeled as a corequisite.");
-  extra.push("DATA 1101L is de-duplicated and shown only once, alongside DATA 1101 when DATA 1101 is still required.");
-  if (patchIsAccountingPrimaryMajor()) extra.push("Accounting sequencing target: ACCT 2203 in fall of sophomore year with FNCE 2101 when prerequisites are complete; ACCT 2204 in spring of sophomore year after ACCT 2203.");
+  extra.push("The generated plan now schedules the discipline-linked gateway course for the primary major in fall of sophomore year when prerequisites/standing permit it: FNCE 2101 for finance, MKTG 1101 for marketing, MGMT 2101 for management, DATA 1101 for analytics, INTL 2101 for international business, and ACCT 2203 for accounting.");
+  extra.push("For accounting majors, the planner prioritizes FNCE 2101 and ACCT 2203 in fall of sophomore year and ACCT 2204 in spring of sophomore year, as long as prerequisites are complete.");
+  extra.push("DATA 1101L is de-duplicated and only appears once, directly alongside DATA 1101 when DATA 1101 is still required.");
+  extra.push("Prerequisites are checked using courses completed before the term starts; a course planned in the same semester cannot satisfy a prerequisite unless it is explicitly modeled as a corequisite.");
   return [base, ...extra].filter(Boolean).join("\n");
 }
