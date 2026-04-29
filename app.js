@@ -580,7 +580,6 @@ const COURSE_RULES = {
   "MGMT 4300": { seniorOnly: true },
 
   // Accounting sequencing
-  // Accounting sequencing
   "ACCT 2203": { prereqs: ["ACCT 1011", "ACCT 1012"] },
   "ACCT 2204": { prereqs: ["ACCT 2203"] },
   "ACCT 2265": { prereqs: ["ACCT 2203"] },
@@ -593,6 +592,8 @@ const COURSE_RULES = {
   "ACCT 3344": { prereqs: ["ACCT 3343"], juniorOnly: true },
   "ACCT 3345": { prereqs: ["ACCT 3343"], juniorOnly: true },
   "ACCT 3380": { prereqs: ["ACCT 2204"], juniorOnly: true },
+  "ACCT 3980": { juniorOnly: true },
+  "ACCT 3990": { seniorOnly: true },
   "ACCT 4310": { prereqs: ["ACCT 2204"], seniorOnly: true },
 
   // Finance sequencing
@@ -1736,12 +1737,13 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
           continue;
         }
 
-       const rules = COURSE_RULES[nextItem.code] || {};
-const sameTermPrereqConflict =
+const rules = COURSE_RULES[nextItem.code] || {};
+
+const hasSameTermPrereq =
   rules.prereqs?.some((prereq) => pickedCodesThisTerm.has(prereq)) ||
   rules.anyPrereqs?.some((prereq) => pickedCodesThisTerm.has(prereq));
 
-if (sameTermPrereqConflict) {
+if (hasSameTermPrereq) {
   continue;
 }
 
