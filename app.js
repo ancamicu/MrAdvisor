@@ -523,33 +523,13 @@ const PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES = {
   "international business": ["INTL 2101"],
   "business analytics major": ["DATA 1101"],
   "business analytics": ["DATA 1101"],
-"accounting major": ["ACCT 1011", "ACCT 1012", "FNCE 2101", "ACCT 2203", "ACCT 2204"],
-"accounting": ["ACCT 1011", "ACCT 1012", "FNCE 2101", "ACCT 2203", "ACCT 2204"]
+  "accounting major": ["ACCT 1011", "ACCT 1012"],
+  "accounting": ["ACCT 1011", "ACCT 1012"]
 };
 
 function getPrimaryMajorBusinessCorePriorities() {
   const primaryMajor = normalizeProgramLabel(primaryMajorInput.value.trim());
   return PRIMARY_MAJOR_BUSINESS_CORE_PRIORITIES[primaryMajor] || [];
-}
-
-function isAccountingMajor() {
-  const primaryMajor = normalizeProgramLabel(primaryMajorInput.value.trim());
-  return primaryMajor === "accounting" || primaryMajor === "accounting major";
-}
-
-function accountingPriorityRank(code) {
-  if (!isAccountingMajor()) return 999;
-
-  const order = [
-    "ACCT 1011",
-    "ACCT 1012",
-    "FNCE 2101",
-    "ACCT 2203",
-    "ACCT 2204"
-  ];
-
-  const index = order.indexOf(code);
-  return index === -1 ? 999 : index;
 }
 
 function prioritizePrimaryMajorBusinessCore(remainingBusinessCore) {
@@ -572,79 +552,16 @@ return [...remainingBusinessCore].sort((a, b) => {
 
 const COURSE_RULES = {
   "ACCT 1012": { prereqs: ["ACCT 1011"], recommendedYear: 1 },
-
   "FNCE 2101": { prereqs: ["ACCT 1011"], recommendedYear: 2 },
-
   "DATA 1101L": { corequisite: ["DATA 1101"], credits: 0 },
-
   "MGMT 4300": { seniorOnly: true },
 
-  // Accounting sequencing
-  "ACCT 2203": { prereqs: ["ACCT 1011", "ACCT 1012"] },
-  "ACCT 2204": { prereqs: ["ACCT 2203"] },
-  "ACCT 2265": { prereqs: ["ACCT 2203"] },
-  "ACCT 3255": { prereqs: ["ACCT 2203"] },
-  "ACCT 3265": { prereqs: ["ACCT 2203"] },
-  "ACCT 3275": { anyPrereqs: ["ACCT 3265", "ACCT 3330", "ACCT 3343"] },
-  "ACCT 3320": { prereqs: ["ACCT 1012", "ACCT 2203"] },
-  "ACCT 3330": { prereqs: ["ACCT 2204"] },
-  "ACCT 3343": { prereqs: ["ACCT 2203"] },
-  "ACCT 3344": { prereqs: ["ACCT 3343"], juniorOnly: true },
-  "ACCT 3345": { prereqs: ["ACCT 3343"], juniorOnly: true },
-  "ACCT 3380": { prereqs: ["ACCT 2204"], juniorOnly: true },
-  "ACCT 3980": { juniorOnly: true },
-  "ACCT 3990": { seniorOnly: true },
-  "ACCT 4310": { prereqs: ["ACCT 2204"], seniorOnly: true },
-
-  // Finance sequencing
-  "FNCE 2101": { prereqs: ["ACCT 1011", "ECON 1011", "ECON 1012"], sophomoreOnly: true },
-  "FNCE 2980": { sophomoreOnly: true },
-  "FNCE 3200": { prereqs: ["FNCE 2101"], juniorOnly: true },
-  "FNCE 3210": { prereqs: ["FNCE 2101"], juniorOnly: true },
-  "FNCE 3215": { prereqs: ["FNCE 2101"], juniorOnly: true },
-  "FNCE 3235": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
-  "FNCE 3340": { prereqs: ["FNCE 2101"] },
-  "FNCE 3980": { juniorOnly: true },
-  "FNCE 4240": { prereqs: ["FNCE 3215"] },
-  "FNCE 4300": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
-  "FNCE 4305": { prereqs: ["FNCE 3210", "FNCE 3215"] },
-  "FNCE 4310": { prereqs: ["FNCE 3210"] },
-  "FNCE 4315": { prereqs: ["FNCE 3210"] },
-  "FNCE 4320": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
-  "FNCE 4325": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
-  "FNCE 4330": { prereqs: ["FNCE 3210", "FNCE 3215"], seniorOnly: true },
-  "FNCE 4990": { seniorOnly: true },
-
-  // Marketing sequencing
-  "MKTG 2212": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
-  "MKTG 2221": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
-  "MKTG 2231": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
-  "MKTG 2241": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
-  "MKTG 2251": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
-  "MKTG 2261": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
-  "MKTG 2271": { prereqs: ["MKTG 1101"], sophomoreOnly: true },
-
-  "MKTG 2311": {
-    prereqs: ["MKTG 1101"],
-    anyPrereqs: ["ECON 0278", "MATH 1017", "MATH 2217", "PSYC 2810", "SOCI 3610"],
-    sophomoreOnly: true
-  },
-
-  "MKTG 2980": { sophomoreOnly: true },
-
-  "MKTG 3321": { prereqs: ["MKTG 1101"], juniorOnly: true },
-  "MKTG 3322": { prereqs: ["MKTG 1101"], juniorOnly: true },
-  "MKTG 3331": { prereqs: ["MKTG 1101"], juniorOnly: true },
-  "MKTG 3332": { prereqs: ["MKTG 1101"], juniorOnly: true },
-  "MKTG 3341": { prereqs: ["MKTG 1101"], juniorOnly: true },
-  "MKTG 3342": { prereqs: ["MKTG 1101"], juniorOnly: true },
-
-  "MKTG 3980": { juniorOnly: true },
-
-  "MKTG 4312": { prereqs: ["MKTG 1101"], seniorOnly: true },
-  "MKTG 4990": { prereqs: ["MKTG 1101"], seniorOnly: true },
-
-  // Management sequencing
+  // Major sequencing helpers
+  "FNCE 3210": { prereqs: ["FNCE 2101"] },
+  "FNCE 3215": { prereqs: ["FNCE 2101"] },
+  "MKTG 2212": { prereqs: ["MKTG 1101"] },
+  "MKTG 2311": { prereqs: ["MKTG 1101"] },
+  "MKTG 4312": { prereqs: ["MKTG 1101"] },
   "MGMT 3235": { prereqs: ["MGMT 2101"] },
   "MGMT 3240": { prereqs: ["MGMT 2101"] }
 };
@@ -660,15 +577,7 @@ function isSeniorYearByCredits(totalCredits) {
 function canTakeCourse(code, completedOrPlannedSet, totalCreditsAtStartOfTerm) {
   const rules = COURSE_RULES[code] || {};
 
-  if (rules.seniorOnly && totalCreditsAtStartOfTerm < 90) {
-    return false;
-  }
-
-  if (rules.juniorOnly && totalCreditsAtStartOfTerm < 60) {
-    return false;
-  }
-
-  if (rules.sophomoreOnly && totalCreditsAtStartOfTerm < 30) {
+  if (rules.seniorOnly && !isSeniorYearByCredits(totalCreditsAtStartOfTerm)) {
     return false;
   }
 
@@ -676,31 +585,13 @@ function canTakeCourse(code, completedOrPlannedSet, totalCreditsAtStartOfTerm) {
     return false;
   }
 
-  if (rules.anyPrereqs?.length && !rules.anyPrereqs.some((prereq) => completedOrPlannedSet.has(prereq))) {
-    return false;
-  }
-
   return true;
 }
 
 function sortByPrerequisiteStructure(items) {
-  const priorityCodes = getPrimaryMajorBusinessCorePriorities();
-
   return [...items].sort((a, b) => {
     const aCode = courseCodeFromPlanItem(a);
     const bCode = courseCodeFromPlanItem(b);
-
-    const aAcctRank = accountingPriorityRank(aCode);
-    const bAcctRank = accountingPriorityRank(bCode);
-
-    if (aAcctRank !== bAcctRank) return aAcctRank - bAcctRank;
-
-    const aPriority = priorityCodes.indexOf(aCode);
-    const bPriority = priorityCodes.indexOf(bCode);
-
-    if (aPriority !== -1 && bPriority === -1) return -1;
-    if (aPriority === -1 && bPriority !== -1) return 1;
-    if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
 
     if (aCode === "MGMT 4300" && bCode !== "MGMT 4300") return 1;
     if (bCode === "MGMT 4300" && aCode !== "MGMT 4300") return -1;
@@ -1649,39 +1540,36 @@ function buildUpcomingSemester(remainingBusinessCore, missingProgramCodes, nextT
   const picks = [];
   let pickedCredits = 0;
 
-  const completedAtStartOfTermSet = new Set(allCourses);
+  const completedOrPlannedSet = new Set(allCourses);
+  const businessCoreItems = sortByPrerequisiteStructure(remainingBusinessCore);
 
-  const combinedItems = [
-    ...remainingBusinessCore
-      .filter((item) => courseCodeFromPlanItem(item) !== "DATA 1101L")
-      .map((item) => {
-        const cleaned = item.replace(/^•\s*/, "");
-        const code = courseCodeFromPlanItem(cleaned);
-        return { code, label: cleaned, credits: inferCredits(code) };
-      }),
-    ...missingProgramCodes.map((code) => {
-      const title = findKnownCourseTitle(code);
-      return {
-        code,
-        label: title ? `${code} ${title}` : `${code} (program-specific requirement)`,
-        credits: inferCredits(code),
-      };
-    }),
-  ];
-
-  sortByPrerequisiteStructure(combinedItems).forEach((item) => {
+  businessCoreItems.forEach((item) => {
     if (pickedCredits >= targetCredits) return;
-    if (!canTakeCourse(item.code, completedAtStartOfTermSet, totalCredits)) return;
 
-    picks.push(item.label);
-    pickedCredits += item.credits;
+    const code = courseCodeFromPlanItem(item);
+    if (!canTakeCourse(code, completedOrPlannedSet, totalCredits)) return;
 
-    if (
-      item.code === "DATA 1101" &&
-      remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")
-    ) {
+    const match = item.match(/\(([0-9]+) cr\)/i);
+    const credits = match ? Number.parseInt(match[1], 10) : inferCredits(code);
+
+    picks.push(item.replace(/^•\s*/, ""));
+    pickedCredits += credits;
+    completedOrPlannedSet.add(code);
+
+    if (code === "DATA 1101" && remainingBusinessCore.some((x) => courseCodeFromPlanItem(x) === "DATA 1101L")) {
       picks.push("DATA 1101L Excel Certification Lab (0 cr) — take with DATA 1101");
+      completedOrPlannedSet.add("DATA 1101L");
     }
+  });
+
+  sortByPrerequisiteStructure(missingProgramCodes).forEach((code) => {
+    if (pickedCredits >= targetCredits) return;
+    if (!canTakeCourse(code, completedOrPlannedSet, totalCredits)) return;
+
+    const title = findKnownCourseTitle(code);
+    picks.push(title ? `${code} ${title}` : `${code} (program-specific requirement)`);
+    pickedCredits += inferCredits(code);
+    completedOrPlannedSet.add(code);
   });
 
   return [
@@ -1727,9 +1615,6 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
   const planItems = [];
 
   sortByPrerequisiteStructure(remainingBusinessCore).forEach((item) => {
-    const codeCheck = courseCodeFromPlanItem(item);
-    if (codeCheck === "DATA 1101L") return;
-
     const cleaned = item.replace(/^•\s*/, "");
     const code = courseCodeFromPlanItem(cleaned);
     const match = cleaned.match(/\(([0-9]+) cr\)/i);
@@ -1750,11 +1635,6 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
     });
   });
 
-  planItems.sort((a, b) => {
-    const sorted = sortByPrerequisiteStructure([a, b]);
-    return sorted[0] === a ? -1 : 1;
-  });
-
   let neededCredits = remainingTo120;
   let termLabel = term.next;
   let runningCredits = totalCredits;
@@ -1766,7 +1646,6 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
     const targetCredits = isFinalTerm ? neededCredits : 15;
     let termCredits = 0;
     const picks = [];
-    const pickedCodesThisTerm = new Set();
 
     let madeProgress = true;
 
@@ -1779,30 +1658,11 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
         if (!canTakeCourse(nextItem.code, completedOrPlannedSet, runningCredits)) {
           continue;
         }
-const rules = COURSE_RULES[nextItem.code] || {};
-
-const hasSameTermPrereq =
-  rules.prereqs?.some((prereq) => pickedCodesThisTerm.has(prereq)) ||
-  rules.anyPrereqs?.some((prereq) => pickedCodesThisTerm.has(prereq));
-
-if (hasSameTermPrereq) {
-  continue;
-}
 
         planItems.splice(i, 1);
-        if (
-  nextItem.code === "FNCE 4330" &&
-  (
-    runningCredits < 90 ||
-    !completedOrPlannedSet.has("FNCE 3210") ||
-    !completedOrPlannedSet.has("FNCE 3215")
-  )
-) {
-  continue;
-}
         picks.push(nextItem.label);
-        pickedCodesThisTerm.add(nextItem.code);
         termCredits += nextItem.credits;
+        completedOrPlannedSet.add(nextItem.code);
         madeProgress = true;
 
         if (nextItem.code === "DATA 1101") {
@@ -1810,17 +1670,13 @@ if (hasSameTermPrereq) {
           if (labIndex !== -1) {
             const lab = planItems.splice(labIndex, 1)[0];
             picks.push(`${lab.label} — take with DATA 1101`);
-            pickedCodesThisTerm.add("DATA 1101L");
+            completedOrPlannedSet.add("DATA 1101L");
           }
         }
 
         break;
       }
     }
-
-    pickedCodesThisTerm.forEach((code) => {
-      completedOrPlannedSet.add(code);
-    });
 
     while (termCredits < targetCredits) {
       const remainingGap = targetCredits - termCredits;
