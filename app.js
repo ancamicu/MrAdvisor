@@ -2671,8 +2671,15 @@ function buildFullRemainingPlan(remainingBusinessCore, programPlanItems, term, t
   return ["Full remaining-semester plan through degree completion", ...semesters].join("\n\n");
 }
 
-const __originalBuildSequencingNotes = buildSequencingNotes;
-function buildSequencingNotes(allCourses, remainingBusinessCore, programPlanItems) {
+// Patch buildSequencingNotes without a function declaration.
+// A function declaration here is hoisted by JavaScript and can accidentally
+// make __originalBuildSequencingNotes point back to the patched function,
+// causing: "Maximum call stack size exceeded."
+const __originalBuildSequencingNotes = (typeof buildSequencingNotes === "function")
+  ? buildSequencingNotes
+  : function () { return ""; };
+
+buildSequencingNotes = function patchedBuildSequencingNotes(allCourses, remainingBusinessCore, programPlanItems) {
   const base = __originalBuildSequencingNotes(allCourses, remainingBusinessCore, programPlanItems);
   const extra = [];
   extra.push("The generated plan now schedules the discipline-linked gateway course for the primary major in fall of sophomore year when prerequisites/standing permit it: FNCE 2101 for finance, MKTG 1101 for marketing, MGMT 2101 for management, DATA 1101 for analytics, INTL 2101 for international business, and ACCT 2203 for accounting.");
@@ -2680,4 +2687,4 @@ function buildSequencingNotes(allCourses, remainingBusinessCore, programPlanItem
   extra.push("DATA 1101L is de-duplicated and only appears once, directly alongside DATA 1101 when DATA 1101 is still required.");
   extra.push("Prerequisites are checked using courses completed before the term starts; a course planned in the same semester cannot satisfy a prerequisite unless it is explicitly modeled as a corequisite.");
   return [base, ...extra].filter(Boolean).join("\n");
-}
+};
