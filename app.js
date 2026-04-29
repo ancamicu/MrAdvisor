@@ -597,16 +597,13 @@ const COURSE_RULES = {
   "ACCT 4310": { prereqs: ["ACCT 2204"], seniorOnly: true },
 
   // Finance sequencing
-  "FNCE 2101": { 
-    prereqs: ["ACCT 1011", "ECON 1011", "ECON 1012"], 
-    sophomoreOnly: true 
-  },
+  "FNCE 2101": { prereqs: ["ACCT 1011", "ECON 1011", "ECON 1012"], sophomoreOnly: true },
   "FNCE 2980": { sophomoreOnly: true },
   "FNCE 3200": { prereqs: ["FNCE 2101"], juniorOnly: true },
   "FNCE 3210": { prereqs: ["FNCE 2101"], juniorOnly: true },
   "FNCE 3215": { prereqs: ["FNCE 2101"], juniorOnly: true },
   "FNCE 3235": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
-  "FNCE 3340": { anyPrereqs: ["ECON 1011", "ECON 1012", "FNCE 2101"] },
+  "FNCE 3340": { prereqs: ["FNCE 2101"] },
   "FNCE 3980": { juniorOnly: true },
   "FNCE 4240": { prereqs: ["FNCE 3215"] },
   "FNCE 4300": { anyPrereqs: ["FNCE 3210", "FNCE 3215"] },
@@ -1758,6 +1755,15 @@ function buildFullRemainingPlan(remainingBusinessCore, missingProgramCodes, term
         if (!canTakeCourse(nextItem.code, completedOrPlannedSet, runningCredits)) {
           continue;
         }
+const rules = COURSE_RULES[nextItem.code] || {};
+
+const hasSameTermPrereq =
+  rules.prereqs?.some((prereq) => pickedCodesThisTerm.has(prereq)) ||
+  rules.anyPrereqs?.some((prereq) => pickedCodesThisTerm.has(prereq));
+
+if (hasSameTermPrereq) {
+  continue;
+}
 
 const rules = COURSE_RULES[nextItem.code] || {};
 
@@ -1770,6 +1776,16 @@ if (hasSameTermPrereq) {
 }
 
         planItems.splice(i, 1);
+        if (
+  nextItem.code === "FNCE 4330" &&
+  (
+    runningCredits < 90 ||
+    !completedOrPlannedSet.has("FNCE 3210") ||
+    !completedOrPlannedSet.has("FNCE 3215")
+  )
+) {
+  continue;
+}
         picks.push(nextItem.label);
         pickedCodesThisTerm.add(nextItem.code);
         termCredits += nextItem.credits;
